@@ -48,6 +48,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 1. Seguir afinando el asesor con conversaciones reales (respuestas aún algo largas).
 2. Evaluación del asesor (OE5): casos de prueba (datos completos, datos faltantes, presupuesto insuficiente, cambio incompatible, fuera de alcance) y una rúbrica.
 3. Fotografía real de producto para el hero y las tarjetas.
+4. Base de datos (aplazada por ser un MVP; así se justifica en la presentación). Opción prevista: SQLite con `node:sqlite`, cambiando solo `OrderStore`; el catálogo podría pasar después a una tabla.
 
 ## Verificación visual
 
