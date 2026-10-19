@@ -1,0 +1,95 @@
+<div class="container page-head">
+  <h1>Asesor IA</h1>
+  <p class="lead">Cuéntale qué haces y cuánto quieres invertir. Te propone un equipo del catálogo de Kamay, validado con las mismas reglas del configurador.</p>
+</div>
+
+<div class="container chat-layout">
+  <section class="chat" aria-labelledby="chat-title">
+    <h2 id="chat-title" class="visually-hidden">Conversación</h2>
+    <ol class="log" aria-live="polite" aria-relevant="additions">
+      <li class="msg msg--assistant">
+        <p class="msg__who">Kamay</p>
+        <p class="msg__text">Hola, soy el asesor de Kamay. ¿Para qué vas a usar tu computadora y cuánto quieres invertir en la torre?</p>
+      </li>
+      @for (entry of advisor.entries(); track $index) {
+        <li class="msg msg--{{ entry.role }}">
+          <p class="msg__who">{{ entry.role === 'user' ? 'Tú' : 'Kamay' }}</p>
+          <p class="msg__text">{{ entry.content }}</p>
+          @if (entry.proposal; as proposal) {
+            <div class="proposal">
+              <p class="proposal__head">
+                <span class="status status--{{ proposal.status }}">{{ statusLabels[proposal.status] }}</span>
+                <span class="proposal__total">{{ proposal.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</span>
+              </p>
+              <ul class="proposal__parts small">
+                @for (part of partNames(proposal); track part.id) {
+                  <li><span class="muted">{{ catalog.categoryName(part.category) }}:</span> {{ part.brand }} {{ part.name }}</li>
+                }
+              </ul>
+              @if (proposal.recommended) { <p class="small status status--ok">Recomendada para tu uso y presupuesto</p> }
+              <button type="button" class="btn btn--primary btn--small" (click)="openInConfigurator(proposal)">Abrir en el configurador</button>
+            </div>
+          }
+        </li>
+      }
+      @if (advisor.pending()) {
+        <li class="msg msg--assistant"><p class="msg__who">Kamay</p><p class="msg__text muted">Consultando el catálogo y validando…</p></li>
+      }
+    </ol>
+
+    @if (advisor.error(); as error) {
+      <div class="notice notice--error" role="alert">
+        <p>{{ error }} Tu conversación se ha guardado.</p>
+        <button type="button" class="btn btn--small" (click)="advisor.retry()">Reintentar</button>
+      </div>
+    }
+
+    @if (!advisor.entries().length) {
+      <div class="suggestions">
+        <p class="small muted" id="suggestions-label">Puedes empezar con:</p>
+        <ul aria-labelledby="suggestions-label">
+          @for (suggestion of suggestions; track suggestion) {
+            <li><button type="button" class="chip" (click)="send(suggestion)">{{ suggestion }}</button></li>
+          }
+        </ul>
+      </div>
+    }
+
+    <form class="composer" (submit)="$event.preventDefault(); send()">
+      <label for="message" class="visually-hidden">Escribe tu mensaje</label>
+      <textarea #message id="message" class="input" rows="2" maxlength="4000" placeholder="Escribe tu mensaje…"
+                [value]="draft()" (input)="draft.set($any($event.target).value)" (keydown)="onKeydown($event)"></textarea>
+      <button type="submit" class="btn btn--primary" [disabled]="advisor.pending() || !draft().trim()">Enviar</button>
+    </form>
+  </section>
+
+  <aside class="side">
+    @if (configurator.componentIds().length) {
+      <div class="card">
+        <h2 class="side__title">Tu configuración actual</h2>
+        <p class="small">El asesor conoce las {{ configurator.componentIds().length }} piezas que tienes en el configurador y puede revisarlas o mejorarlas.</p>
+      </div>
+    }
+    <div class="card">
+      <h2 class="side__title">¿Prefieres hablar con una persona?</h2>
+      @if (handoff()) {
+        <p class="small" role="status"><strong>Demostración:</strong> en este prototipo no hay un asesor humano atendiendo. En la versión final, tu conversación se enviaría a un especialista de Kamay.</p>
+      } @else {
+        <p class="small">Un especialista puede continuar desde esta conversación.</p>
+        <button type="button" class="btn btn--small" (click)="handoff.set(true)">Hablar con un asesor humano</button>
+      }
+    </div>
+    <div class="card">
+      <h2 class="side__title">Qué sabe hacer</h2>
+      <ul class="small side__list">
+        <li>Orientar para Photoshop, Blender (CPU o GPU) y gaming.</li>
+        <li>Proponer solo productos del catálogo, con precios referenciales.</li>
+        <li>Validar cada propuesta con las reglas de compatibilidad.</li>
+        <li>No promete FPS ni tiempos de render.</li>
+      </ul>
+    </div>
+    @if (advisor.entries().length) {
+      <button type="button" class="link-btn small" (click)="advisor.clear()">Nueva conversación</button>
+    }
+  </aside>
+</div>

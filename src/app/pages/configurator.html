@@ -1,0 +1,156 @@
+<div class="container page-head">
+  <h1>Arma tu equipo</h1>
+  @if (store.origin(); as origin) {
+    <p class="lead">Partiendo de <strong>{{ origin }}</strong>. Cambia cualquier pieza: validamos la compatibilidad en cada cambio.</p>
+  } @else {
+    <p class="lead">Indica tu uso y presupuesto, parte de una base curada o elige cada pieza. Validamos la compatibilidad en cada cambio.</p>
+  }
+</div>
+
+<div class="container layout">
+  <div class="main">
+    <section class="panel" aria-labelledby="needs-title">
+      <h2 id="needs-title" class="panel__title">1 · Tu uso y presupuesto</h2>
+      <div role="group" aria-label="Uso principal" class="chips">
+        @for (profile of catalog.profiles(); track profile.id) {
+          <button type="button" class="chip" [attr.aria-pressed]="store.profileId() === profile.id" (click)="setProfile(profile.id)">
+            {{ profile.name }}
+          </button>
+        }
+        <button type="button" class="chip" [attr.aria-pressed]="store.profileId() === null" (click)="setProfile(null)">Sin definir</button>
+      </div>
+      @if (catalog.profile(store.profileId()); as profile) {
+        <p class="small muted">{{ profile.software }}: {{ profile.description }}</p>
+      }
+      <div class="field budget">
+        <label for="budget">Presupuesto para la torre (S/)</label>
+        <input id="budget" class="input" type="number" inputmode="numeric" min="1" step="100" placeholder="Ej. 6000"
+               [value]="store.budget() ?? ''" (change)="setBudget($any($event.target).value)">
+      </div>
+      @if (baseForProfile(); as base) {
+        <div class="base-offer">
+          <p><strong>Base recomendada:</strong> {{ base.name }} · {{ base.validation.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}
+            @if (store.budget() && base.validation.total > store.budget()!) {
+              <span class="status status--advertencia">supera tu presupuesto por {{ base.validation.total - store.budget()! | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</span>
+            }
+          </p>
+          @if (store.origin() !== base.name) {
+            <button type="button" class="btn btn--small" (click)="loadBase(base)">Usar esta base</button>
+          }
+        </div>
+      }
+    </section>
+
+    <section class="panel" aria-labelledby="parts-title">
+      <h2 id="parts-title" class="panel__title">2 · Componentes</h2>
+      @if (catalog.resource.error()) {
+        <div class="notice notice--error" role="alert"><p>No se pudo cargar el catálogo. ¿Está corriendo la API?</p></div>
+      }
+      <ul class="slots">
+        @for (category of catalog.categories(); track category.id) {
+          @let current = selected().get(category.id);
+          <li class="slot">
+            <div class="slot__head">
+              <div class="slot__info">
+                <h3 class="slot__category">{{ category.name }}@if (category.id === 'gpu') { <span class="tag">Opcional</span> }</h3>
+                @if (current) {
+                  <p class="slot__part">{{ current.brand }} {{ current.name }}</p>
+                  @if (validation()?.conflicts?.[current.id]?.length) {
+                    <p class="status status--bloqueo">{{ validation()!.conflicts![current.id][0] }}</p>
+                  }
+                } @else if (category.id === 'gpu') {
+                  <p class="slot__part muted">Sin tarjeta gráfica dedicada</p>
+                } @else {
+                  <p class="slot__part muted">Sin elegir</p>
+                }
+              </div>
+              @if (current) { <span class="slot__price">{{ current.price | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</span> }
+              <button type="button" class="btn btn--small" [attr.aria-expanded]="open() === category.id" [attr.aria-controls]="'options-' + category.id"
+                      (click)="toggle(category.id)">
+                {{ open() === category.id ? 'Cerrar' : current ? 'Cambiar' : 'Elegir' }}<span class="visually-hidden"> {{ category.name }}</span>
+              </button>
+            </div>
+            @if (open() === category.id) {
+              <ul class="options" [id]="'options-' + category.id" [attr.aria-label]="'Opciones de ' + category.name">
+                @if (category.id === 'gpu') {
+                  <li>
+                    <button type="button" class="option" [attr.aria-pressed]="!current" (click)="current && store.remove(current); open.set(null)">
+                      <span class="option__name">Sin tarjeta gráfica dedicada</span>
+                      <span class="option__meta">Usa los gráficos integrados del procesador, si los tiene.</span>
+                    </button>
+                  </li>
+                }
+                @for (option of options(category.id); track option.part.id) {
+                  @let delta = priceDelta(option.part);
+                  <li>
+                    <button type="button" class="option" [class.option--conflict]="option.conflicts.length" [attr.aria-pressed]="current?.id === option.part.id" (click)="choose(option.part)">
+                      <span class="option__name">{{ option.part.brand }} {{ option.part.name }}</span>
+                      <span class="option__price">
+                        {{ option.part.price | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}
+                        @if (delta !== null && delta !== 0) { <span class="muted">({{ delta > 0 ? '+' : '−' }}{{ (delta > 0 ? delta : -delta) | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }})</span> }
+                      </span>
+                      <span class="option__meta">{{ specs(option.part).join(' · ') }}</span>
+                      @if (option.conflicts.length) {
+                        @for (conflict of option.conflicts; track conflict) { <span class="status status--bloqueo">{{ conflict }}</span> }
+                      } @else {
+                        <span class="status status--ok">Compatible con tu selección</span>
+                      }
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+    </section>
+  </div>
+
+  <aside class="summary" aria-labelledby="summary-title">
+    <h2 id="summary-title" class="panel__title">Resumen</h2>
+    <div aria-live="polite">
+      @if (store.error()) {
+        <div class="notice notice--error">
+          <p>No se pudo validar la configuración.</p>
+          <button type="button" class="link-btn" (click)="store.reset()">Empezar de nuevo</button>
+        </div>
+      } @else if (validation(); as v) {
+        <p class="status status--{{ v.status }} summary__status">{{ statusLabels[v.status] }}</p>
+        <p class="small muted">{{ statusHints[v.status] }}</p>
+        @if (v.recommended && v.profileId) {
+          <p class="notice notice--ok small">Recomendado para {{ catalog.profile(v.profileId)?.name }}@if (v.budget) { y dentro de tu presupuesto}.</p>
+        }
+        <p class="summary__total">{{ v.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</p>
+        @if (v.budget; as budget) {
+          <p class="small" [class.status--advertencia]="!budget.within">
+            @if (budget.within) {
+              Te sobran {{ budget.difference | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }} de tu presupuesto.
+            } @else {
+              Superas tu presupuesto por {{ -budget.difference | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}.
+            }
+          </p>
+        }
+        @if (store.validating()) { <p class="small muted">Validando…</p> }
+      } @else {
+        <p class="small muted">Validando…</p>
+      }
+    </div>
+    <div class="summary__actions">
+      @if (canOrder()) {
+        <a routerLink="/pedido" class="btn btn--primary">Continuar al pedido</a>
+      } @else {
+        <button type="button" class="btn btn--primary" disabled aria-describedby="order-hint">Continuar al pedido</button>
+        <p id="order-hint" class="small muted">Disponible cuando el equipo esté completo y sea compatible.</p>
+      }
+      <a routerLink="/asesor" class="btn">Preguntar al asesor IA</a>
+      @if (store.componentIds().length) {
+        <button type="button" class="link-btn small" (click)="store.reset()">Vaciar configuración</button>
+      }
+    </div>
+    @if (validation(); as v) {
+      <h3 class="summary__checks">Comprobaciones</h3>
+      <app-checks-list [checks]="v.checks" />
+    }
+    <p class="small muted">Precios referenciales en soles. Las comprobaciones cubren las reglas listadas; no certifican rendimiento.</p>
+  </aside>
+</div>
