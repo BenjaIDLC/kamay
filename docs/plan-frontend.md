@@ -2,7 +2,7 @@
 
 Estado: propuesta de diseño para revisar. No autoriza implementación ni fija todavía imágenes, colores o tipografías definitivas.
 
-Los acuerdos de producto se registran en [objetivos-mvp.md](./objetivos-mvp.md). El recorrido funcional de los cinco objetivos está acordado, incluido el armado desde bases curadas (OE2). La maqueta visual y la distribución concreta de las pantallas siguen pendientes.
+Los acuerdos de producto se registran en [objetivos-mvp.md](./objetivos-mvp.md). OE2 contempla armado manual desde bases curadas, atributos técnicos normalizados, reglas reutilizables y filtrado progresivo. Su alcance es de 8 categorías, 10–15 productos por categoría, 15 comprobaciones y 4 bases. El contrato revisado está en [oe2-reglas.md](./oe2-reglas.md) y los cuatro perfiles definidos en [oe2-perfiles.md](./oe2-perfiles.md). La maqueta visual y la distribución de las pantallas siguen pendientes.
 
 ## Idea central
 
@@ -80,49 +80,53 @@ Equipos y Componentes se basan en el mismo catálogo del backend. Un equipo pred
 1. Desde el homepage, explorar Equipos, consultar Componentes o entrar al asistente.
 2. En Equipos, revisar una propuesta para render 3D, diseño gráfico o gaming y continuar con ella o personalizarla.
 3. Para armar uno personalizado, indicar uso y presupuesto y elegir una base curada; si no existe una opción adecuada a esos criterios, ver una explicación.
-4. En el configurador, revisar piezas y total, sustituir componentes por categoría y consultar los resultados de cada validación.
-5. Si hay conflictos o falta información, ver las comprobaciones afectadas y corregir la selección. Una configuración modificada no hereda automáticamente la recomendación de uso de la base.
+4. En el configurador, revisar piezas y total y sustituir componentes por categoría. Las alternativas compatibles con la selección actual aparecen primero; las demás explican sus conflictos o los datos pendientes. Se puede elegir explícitamente continuar sin GPU dedicada, activando la comprobación de salida de video integrada.
+5. Consultar el resultado de cada comprobación y distinguir bloqueos, advertencias y sugerencias. Corregir los conflictos o completar los datos requeridos para avanzar. Una configuración modificada no hereda automáticamente la recomendación de uso de la base.
 6. Opcionalmente, consultar al asistente y abrir su propuesta en el mismo configurador. Un fallo conserva la conversación y permite reintentar.
-7. Guardar la configuración y revisar el resumen antes de crear un pedido. Solo avanzar como configuración validada cuando supere las comprobaciones requeridas.
+7. Guardar la configuración y revisar el resumen antes de crear un pedido. El estado global será Incompleta, No válida, Pendiente de datos o Validada. Solo Validada avanza a pedido; puede tener advertencias o sugerencias visibles. El backend vuelve a evaluar al crear el pedido.
 8. Completar el pago simulado y consultar el pedido persistente y sus etapas demostrativas.
 
-El MVP comprueba reglas de compatibilidad declaradas. No incluye una evaluación general de rendimiento ni garantiza que cada modificación conserve la adecuación al uso. No se asignan puntuaciones globales ni badges de estabilidad a las piezas.
+El MVP comprueba reglas declaradas y tendrá guía R15 mediante los cuatro perfiles definidos. No incluye una evaluación general de rendimiento ni garantiza que cada modificación conserve la adecuación al uso. No se asignan puntuaciones globales ni badges de estabilidad a las piezas.
 
 ## Comportamiento que debe quedar claro
 
 1. Equipos ofrece una entrada al armado desde bases curadas. La asesoría es opcional y sus propuestas pueden abrirse en el configurador.
 2. La IA pregunta por uso, software, exigencia, presupuesto y componentes existentes cuando falten datos.
 3. Cada propuesta muestra componentes del catálogo, justificación, total calculado en servidor y comprobaciones de compatibilidad. Los datos sintéticos se identifican como demostración.
-4. Un cambio de componente vuelve a validar la configuración. Una selección incompleta o incompatible no se presenta como aprobada ni puede avanzar como pedido validado.
+4. Un cambio de componente vuelve a validar la configuración. Una selección incompleta o con bloqueos incumplidos o sin datos no se presenta como aprobada ni puede avanzar como pedido validado.
 5. Si falla la IA, se conserva la conversación y se ofrece reintentar. La derivación humana es un botón de demostración y debe decirlo.
 6. El pedido y el pago son simulados; la interfaz nunca debe sugerir que se cobró dinero o que alguien ensamblará y entregará el equipo.
 
 ## Estados y accesibilidad
 
 - Carga, conversación inicial, datos insuficientes, propuesta disponible, incompatibilidad, error recuperable y configuración guardada.
+- El panel muestra las quince comprobaciones y separa resultado (cumple, no cumple, sin datos, no aplica) de severidad (bloqueo, advertencia, sugerencia o nula), mostrando motivos y piezas afectadas.
+- No aplica distingue en su mensaje entre elecciones aún pendientes y condiciones omitidas deliberadamente. Sin datos señala la información que falta de las piezas o del contexto ya elegidos.
+- El filtro no debe ocultar los motivos de incompatibilidad ni impedir revisar varias piezas para cambiar de plataforma. No debe anunciar compatibilidad completa con datos insuficientes.
 - Carrusel navegable con botones anterior/siguiente, teclado, indicadores comprensibles y foco visible; sin reproducción automática.
 - Un H1 por pantalla, controles con nombre accesible, contraste WCAG AA, estados de carga y errores anunciados, y foco gestionado al navegar o mostrar resultados.
 - Imágenes con texto alternativo útil; imágenes decorativas con texto alternativo vacío. Se requieren versiones y recortes para escritorio y móvil.
 
 ## Orden de trabajo propuesto
 
-1. Aprobar el wireframe, el tono de los titulares y las referencias fotográficas.
-2. Definir tres equipos de partida y sus imágenes. Sus componentes deben existir en el catálogo y superar la validación; si se mantiene el catálogo sintético, etiquetarlos como demostración.
-3. Implementar homepage adaptable y carrusel accesible, con enlaces reales a Equipos, Componentes y Asesor IA.
-4. Diseñar las dos vistas de catálogo, sus detalles y el recorrido de armado personalizado desde bases curadas.
-5. Implementar ese recorrido y conectar el asistente a la API.
+1. Aplicar los [perfiles definidos](./oe2-perfiles.md) al [contrato revisado de 15 comprobaciones](./oe2-reglas.md), adaptando el backend y las herramientas del asistente.
+2. Ampliar los datos sintéticos y construir cuatro bases demostrativas con pruebas; completar después el catálogo curado y sus fuentes. Se puede comenzar con menos productos para desarrollar el motor.
+3. Aprobar la maqueta del homepage, el tono de los titulares y las referencias fotográficas. El carrusel conserva tres familias: diseño, render 3D (bases CPU y GPU) y gaming.
+4. Implementar homepage adaptable y carrusel accesible, con enlaces reales a Equipos, Componentes y Asesor IA.
+5. Diseñar e implementar las vistas de catálogo y el armado personalizado con filtrado progresivo, y conectar el asistente al mismo motor de validación.
 6. Incorporar guardado, revisión y pedido simulado; probar el recorrido completo en escritorio y móvil.
 
-## Entregable inmediato
+## Próximos entregables
 
-Maqueta visual del homepage en escritorio y móvil, con fotografía del hero, copy, paleta, tipografía, proporciones y carrusel. La estructura textual actual es un sketch, no un diseño final aprobado. La implementación comienza después de acordar esa maqueta.
+El [contrato revisado de las 15 comprobaciones de OE2](./oe2-reglas.md) y los [cuatro perfiles](./oe2-perfiles.md) ya están documentados. Sigue adaptar el backend y construir bases demostrativas. El siguiente entregable visual será la maqueta del homepage en escritorio y móvil, con fotografía del hero, copy, paleta, tipografía, proporciones y carrusel. La estructura textual actual es un sketch, no un diseño final aprobado. La implementación del homepage comienza después de acordar esa maqueta.
 
 ## Decisiones abiertas
 
+- Fuentes de los productos y justificación de las políticas de potencia y holgura. Las quince comprobaciones no certifican todo el hardware.
 - Distribución visual del configurador y acceso al asistente; posible incorporación de piezas directamente desde Componentes.
 
 - Fotografía final del hero y de cada caso de uso, con derechos de uso claros.
 - Voz de marca: más técnica, más editorial o un punto intermedio.
 - Paleta, fuentes y tratamiento de imagen.
 - Fuente definitiva del catálogo, disponibilidad y precios. El catálogo actual es sintético.
-- Selección concreta de los equipos base y criterios curados de uso y presupuesto. En el prototipo pueden recorrer un pedido simulado; no son ofertas comerciales reales.
+- Selección de productos concretos para las cuatro bases y evidencia de soporte de software. En el prototipo pueden recorrer un pedido simulado; no son ofertas comerciales reales.

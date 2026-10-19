@@ -3,6 +3,9 @@ import { pathToFileURL } from 'node:url';
 import { catalog, categories } from './catalog.mjs';
 import { validateConfiguration } from './compatibility.mjs';
 import { advise, AdvisorError, type Message } from './advisor.mjs';
+import { parseConfiguration, ConfigurationInputError } from './configuration.mjs';
+import { profiles } from './profiles.mjs';
+import { listBuilds } from './builds.mjs';
 
 export const app = express();
 app.disable('x-powered-by');
@@ -15,18 +18,19 @@ app.get('/api/components', (req, res) => {
   }
   res.json({ currency: 'PEN', demo: true, components: catalog.filter(part => !category || part.category === category) });
 });
+app.get('/api/profiles', (_req, res) => { res.json({ demo: true, profiles }); });
+app.get('/api/builds', (req, res) => {
+  const budget = req.query['budget'];
+  if (budget !== undefined && (typeof budget !== 'string' || !budget.trim())) {
+    res.status(400).json({ error: 'Presupuesto inválido.' });
+    return;
+  }
+  const options = parseConfiguration({ componentIds: [], profileId: req.query['profileId'], budget: budget === undefined ? null : Number(budget) });
+  res.json(listBuilds(options));
+});
 app.post('/api/configurations/validate', (req, res) => {
-  const ids: unknown = req.body?.componentIds;
-  if (!Array.isArray(ids) || ids.length > 16 || !ids.every(id => typeof id === 'string') || new Set(ids).size !== ids.length) {
-    res.status(400).json({ error: 'componentIds debe contener hasta 16 identificadores únicos.' });
-    return;
-  }
-  const parts = ids.map(id => catalog.find(part => part.id === id));
-  if (parts.some(part => !part)) {
-    res.status(400).json({ error: 'Hay componentes que no existen en el catálogo.' });
-    return;
-  }
-  res.json(validateConfiguration(parts.filter(part => part !== undefined)));
+  const input = parseConfiguration(req.body);
+  res.json(validateConfiguration(input.componentIds.map(id => catalog.find(part => part.id === id)!), input));
 });
 let advising = false;
 app.post('/api/advice', async (req, res) => {
@@ -48,6 +52,7 @@ app.post('/api/advice', async (req, res) => {
 });
 app.use((_req, res) => { res.status(404).json({ error: 'Ruta no encontrada.' }); });
 app.use((error: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  if (error instanceof ConfigurationInputError) { res.status(400).json({ error: error.message }); return; }
   const status = error && typeof error === 'object' && 'status' in error ? error.status : 500;
   res.status(status === 413 ? 413 : status === 400 ? 400 : 500).json({ error: status === 413 ? 'Solicitud demasiado grande.' : status === 400 ? 'JSON inválido.' : 'Error interno.' });
 });

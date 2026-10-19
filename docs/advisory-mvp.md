@@ -1,6 +1,6 @@
 # Kamay: primer flujo de asesoría
 
-> Documento inicial de referencia. Los acuerdos actuales de alcance y recorrido están en [objetivos-mvp.md](./objetivos-mvp.md) y [plan-frontend.md](./plan-frontend.md), que prevalecen sobre este esquema. La disposición del chat, los perfiles, el contrato REST y la secuencia de este documento son propuestas iniciales, no una descripción de funcionalidades implementadas. El siguiente entregable es la maqueta del homepage.
+> Documento inicial de referencia. Los acuerdos actuales están en [objetivos-mvp.md](./objetivos-mvp.md), [plan-frontend.md](./plan-frontend.md), el [contrato de 15 comprobaciones de OE2](./oe2-reglas.md) y los [cuatro perfiles definidos](./oe2-perfiles.md), que prevalecen sobre este esquema. La disposición del chat, los perfiles, el contrato REST y la secuencia de este documento son propuestas iniciales, no funcionalidades implementadas. El siguiente paso es adaptar el backend y construir bases demostrativas; la maqueta del homepage sigue pendiente como entregable visual.
 
 ## Resultado del primer hito
 
@@ -100,7 +100,7 @@ No se expondrán conversaciones o configuraciones privadas a otros visitantes.
 Español, identidad Kamay, estilo editorial claro, fotografía protagonista,
 tipografía de impacto y CTAs directos. Bordes rectos, sin radios, sin desplazamientos
 ni escalados al pasar el cursor, sin cejas decorativas ni texto de relleno.
-La planificación actual comienza por la maqueta del homepage; véase el orden de trabajo en [plan-frontend.md](./plan-frontend.md).
+La planificación actual ya define los cuatro perfiles y prioriza adaptar el backend y construir bases demostrativas. Conserva la maqueta del homepage como siguiente entregable visual; véase el orden de trabajo en [plan-frontend.md](./plan-frontend.md).
 
 ## Secuencia inicial de implementación (referencia histórica)
 

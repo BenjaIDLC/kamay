@@ -34,7 +34,7 @@ test('live chatbot asks questions, proposes a build, and handles an incompatible
     if (result.proposal) {
       const parts = result.proposal.componentIds.map(id => catalog.find(part => part.id === id));
       assert.ok(parts.every(Boolean), 'Proposal must only contain catalog products');
-      assert.deepEqual(result.proposal.validation, validateConfiguration(parts));
+      assert.deepEqual(result.proposal.validation, validateConfiguration(parts, result.proposal));
     }
     messages.push({ role: 'assistant', content: result.reply });
     console.log(JSON.stringify({ user: content, ...result }));
@@ -44,9 +44,10 @@ test('live chatbot asks questions, proposes a build, and handles an incompatible
     const intro = await ask('Quiero armar una PC. ¿Qué necesitas saber antes de recomendarme componentes? Responde brevemente.');
     assert.equal(intro.proposal, null, 'Insufficient requirements must not produce a build');
     assert.match(intro.reply, /presupuesto/i);
-    const build = await ask('Gaming a 1440p, principalmente juegos de un jugador. Tengo S/ 6000 solo para la torre, sin periféricos, y no reutilizo componentes. Acepto el catálogo sintético de demostración y sus limitaciones, sin garantías de FPS. Propón ahora un equipo completo con los ocho tipos de componente y valida su compatibilidad. Responde brevemente.');
+    const build = await ask('Fortnite a 1080p. Tengo S/ 6000 solo para la torre, sin periféricos, y no reutilizo componentes. Quiero GPU dedicada. Acepto el catálogo sintético de demostración y sus limitaciones, sin garantías de FPS. Usa el perfil gaming, propón ahora un equipo completo con los ocho tipos de componente y valida su compatibilidad. Responde brevemente.');
     assert.ok(build.proposal, 'Expected a server-validated proposal');
     assert.equal(build.proposal.validation.valid, true);
+    assert.equal(build.proposal.validation.recommended, true);
     assert.ok(build.proposal.validation.total <= 6000, 'Build must respect the budget');
     const change = await ask('Quiero cambiar solo la placa por board-b y mantener el procesador. Valida ese cambio y explica si es compatible. No lo apliques si es incompatible. Responde brevemente.');
     assert.match(change.reply, /incompatib|no.{0,30}compatib|socket/i);

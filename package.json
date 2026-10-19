@@ -4,7 +4,7 @@
   "scripts": {
     "api:build": "tsc -p backend/tsconfig.json",
     "api:start": "npm run api:build && node --env-file-if-exists=.env dist/api/server.mjs",
-    "api:test": "npm run api:build && node --test backend/api.test.mjs",
+    "api:test": "npm run api:build && node --test backend/api.test.mjs backend/compatibility.test.mjs",
     "api:test:live": "npm run api:build && node --env-file=.env --test backend/advice.live.test.mjs",
     "ng": "ng",
     "start": "ng serve",
