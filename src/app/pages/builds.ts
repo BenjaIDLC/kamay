@@ -64,7 +64,8 @@ const highlights: Category[] = ['cpu', 'gpu', 'ram', 'storage'];
     .specs div { display: grid; grid-template-columns: 7.5rem 1fr; gap: 8px; }
     .specs dt { color: var(--muted); }
     .specs dd { margin: 0; font-weight: 600; }
-    .card--custom { background: var(--dark); color: var(--on-dark); border-color: var(--dark); }
+    .card--custom { background: radial-gradient(120% 140% at 90% 10%, #a855f7 0%, #7c3aed 45%, #4c1d95 100%); color: #fff; }
+    .card--custom :focus-visible { outline-color: #fff; }
   `,
 })
 export default class Builds {

@@ -1,13 +1,13 @@
 .layout { display: grid; gap: 24px; padding-bottom: 64px; align-items: start; }
 @media (min-width: 960px) { .layout { grid-template-columns: minmax(0, 1fr) 380px; } }
 .main { display: grid; gap: 24px; min-width: 0; }
-.panel, .summary { background: var(--surface); border: 1px solid var(--line); padding: 24px; }
+.panel, .summary { background: var(--surface); border-radius: var(--radius); padding: 24px; }
 .panel__title { font-size: 1.25rem; margin-bottom: 16px; }
 .budget { max-width: 280px; margin-top: 16px; }
 .base-offer { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; }
 .base-offer p { margin: 0; }
 .slots { list-style: none; margin: 0; padding: 0; }
-.slot { border-top: 1px solid var(--line); padding: 14px 0; }
+.slot { border-top: 1px solid var(--line-strong); padding: 14px 0; }
 .slot__head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .slot__info { flex: 1 1 220px; min-width: 0; }
 .slot__category { font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0; display: flex; gap: 8px; align-items: center; }
@@ -15,12 +15,12 @@
 .slot__price { font-weight: 800; }
 .options { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 8px; }
 .option {
-  width: 100%; text-align: left; font: inherit; color: inherit; background: var(--bg); border: 2px solid var(--line);
+  width: 100%; text-align: left; font: inherit; color: inherit; background: var(--bg); border: 2px solid var(--line); border-radius: var(--radius-sm);
   padding: 12px 14px; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 4px 12px;
 }
 .option:hover { border-color: var(--ink); }
-.option[aria-pressed='true'] { border-color: var(--ink); background: var(--surface); box-shadow: inset 4px 0 0 var(--accent); }
-.option--conflict { background: var(--surface); }
+.option[aria-pressed='true'] { border-color: var(--ink); background: var(--surface); border-color: var(--accent); }
+.option--conflict { background: #fafafa; }
 .option__name { font-weight: 700; }
 .option__price { font-weight: 700; white-space: nowrap; }
 .option__meta, .option .status { grid-column: 1 / -1; font-size: 0.875rem; }

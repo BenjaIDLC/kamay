@@ -43,7 +43,7 @@ import { stageNames, type Order } from '../core/api';
     </div>
   `,
   styles: `
-    .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); }
+    .table-wrap { overflow-x: auto; background: var(--surface); border-radius: var(--radius); }
     table { width: 100%; border-collapse: collapse; min-width: 560px; }
     th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); }
     thead th { font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.06em; }

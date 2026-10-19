@@ -1,0 +1,72 @@
+<section class="hero-wrap" aria-roledescription="carrusel" aria-label="Lo que puedes hacer en Kamay">
+  <div class="hero" [attr.aria-live]="rotating() ? 'off' : 'polite'">
+    @for (slide of slides; track slide.art; let i = $index) {
+      <div class="slide slide--{{ slide.theme }} slide--{{ slide.align }}" [class.is-active]="i === current()"
+           role="group" aria-roledescription="diapositiva" [attr.aria-label]="i + 1 + ' de ' + slides.length"
+           [attr.aria-hidden]="i !== current()" [attr.inert]="i !== current() ? '' : null">
+        <div class="slide__copy">
+          <h2 class="slide__headline">{{ slide.headline }}</h2>
+          <p class="slide__sub">{{ slide.sub }}</p>
+          <div class="slide__ctas">
+            @for (cta of slide.ctas; track cta.link; let first = $first) {
+              <a [routerLink]="cta.link" class="pill-btn" [class.pill-btn--secondary]="!first">
+                {{ cta.label }}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              </a>
+            }
+          </div>
+        </div>
+
+        <div class="slide__art" aria-hidden="true">
+          @switch (slide.art) {
+            @case ('advisor') {
+              <app-tower-art class="art-tower art-tower--back" finish="light" glow="#60a5fa" />
+              <app-tower-art class="art-tower art-tower--front" glow="#c4b5fd" />
+              <div class="bubble bubble--user">Hago render en Blender, tengo S/ 8000</div>
+              <div class="bubble bubble--kamay">Te propongo Kamay Render GPU: 16 GB de VRAM, validado ✓</div>
+              <span class="tag-pill tag-pill--a">ASESORÍA IA</span>
+            }
+            @case ('checks') {
+              <app-tower-art class="art-tower art-tower--solo" glow="#f97316" />
+              <ul class="check-stack">
+                @for (check of checks; track check) { <li><span>✓</span>{{ check }}</li> }
+              </ul>
+              <span class="tag-pill tag-pill--b">COMPATIBLE</span>
+            }
+            @case ('lineup') {
+              <app-tower-art class="art-tower art-tower--l1" finish="light" glow="#f472b6" />
+              <app-tower-art class="art-tower art-tower--l2" glow="#38bdf8" />
+              <app-tower-art class="art-tower art-tower--l3" finish="light" glow="#a3e635" />
+              <span class="tag-pill tag-pill--c">DISEÑO</span>
+              <span class="tag-pill tag-pill--d">RENDER 3D</span>
+              <span class="tag-pill tag-pill--e">GAMING</span>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <div class="hero__arrows">
+      <button type="button" class="arrow" (click)="previous()" aria-label="Diapositiva anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+      </button>
+      <button type="button" class="arrow" (click)="next()" aria-label="Diapositiva siguiente">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="hero__controls">
+    @for (slide of slides; track slide.art; let i = $index) {
+      <button type="button" class="dot" [class.is-active]="i === current()" [attr.aria-current]="i === current() ? 'true' : null"
+              [attr.aria-label]="'Ir a la diapositiva ' + (i + 1)" (click)="go(i)"></button>
+    }
+    <button type="button" class="pause" (click)="playing.set(!playing())" [attr.aria-label]="playing() ? 'Pausar rotación' : 'Reanudar rotación'">
+      @if (playing()) {
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14M16 5v14" /></svg>
+      } @else {
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 4 13 8-13 8z" /></svg>
+      }
+    </button>
+  </div>
+</section>
