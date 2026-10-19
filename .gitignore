@@ -8,6 +8,10 @@
 
 # Node
 /node_modules
+.env
+.env.*
+!.env.example
+.codex/
 npm-debug.log
 yarn-error.log
 
