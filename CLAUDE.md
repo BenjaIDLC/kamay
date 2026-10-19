@@ -10,6 +10,9 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - Commits: mensaje **en minúscula**, en inglés, corto y **sin firma de Claude** (sin `Co-Authored-By`). Hacer commit y push solo cuando el usuario lo pida.
 - Prioridad: algo **funcional y demostrable**, no precisión de producto comercial. Evitar sobreingeniería y documentación excesiva.
 - Mantener este archivo al día al terminar una tarea importante (estado, decisiones, pendientes).
+- Explicaciones para presentar (guiones, sustentación): equilibrar técnica y claridad. Por cada pieza, primero el **nombre técnico** (p. ej. "SPA", "API REST", "capa de dominio"), luego una explicación estándar de desarrollo de software que se entienda, y al final el **paralelo abstracto** (p. ej. "es la cocina", "aquí definimos las reglas del negocio"). Ni puro tecnicismo ni solo analogías.
+- UI: prefiere layouts aireados (p. ej. tarjetas de 2 por fila, botones a todo el ancho del contenedor, tablas con bordes claros) y revisa con capturas.
+- Entorno: Windows, PowerShell y VS Code. Para desarrollar hay que tener dos terminales abiertas: `npm run api:start` (API en el puerto 3000, lee `.env` solo al arrancar) y `npm start` (frontend en el 4200).
 
 ## Estado actual
 
@@ -17,6 +20,14 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - `npm run api:test` cubre motor, API, pedidos y asesor con un proveedor simulado (14 tests).
 - OpenAI con créditos cargados: `npm run api:test:live` pasa (conversación de 3 turnos, unos centavos por corrida). Con `ADVISOR_DEBUG=1` se registran las llamadas a herramientas.
 - Asesor: `search_catalog` no filtra por uso (devuelve `suggestedFor`), y el cliente reenvía la última propuesta (`proposal` en `/api/advice`) para que el modelo conozca sus IDs; sin eso, el modelo gastaba las 8 rondas buscando piezas.
+- Página Equipos rediseñada: 2 tarjetas por fila, tabla con las 8 piezas en orden fijo ("Gráficos integrados" si no hay GPU) y botones a todo el ancho.
+
+## Presentación (en curso)
+
+- Deck en claude.ai: https://claude.ai/artifact/3fyFVwHgLUTmjmtahycvkr (privado; se comparte desde su menú Share). 13 diapositivas: portada, propuesta, **arquitectura** (diagrama, motor de 8 reglas, frontend con signals), librerías, **asesor IA** (idea "la IA conversa, el motor decide", flujo, herramientas, límites prompt/código, lo que aprendimos al probar con IA real, evaluación) y cierre.
+- El usuario quitó de arquitectura las diapositivas "El cliente nunca decide" y "Decisiones"; esa idea se cuenta dentro del guion del diagrama.
+- Guion de arquitectura (diapositivas 3–5) ya redactado en el chat con el formato nombre técnico → explicación → paralelo (salón / mesero / cocina / proveedor; revisión técnica con semáforo; hoja de cálculo). Aún **no** se copió a las notas del orador.
+- Siguiente: confirmar si el guion va a las notas, redactar el guion del asesor IA con el mismo formato, y revisar en el deck: `[Integrantes del equipo]` en la portada, el costo "≈ $0,02 por mensaje" (estimado, verificar en el panel de uso de OpenAI) y si el repo de GitHub del cierre es público.
 
 ## Decisiones tomadas (no revertir sin consultar)
 
@@ -41,3 +52,6 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 ## Verificación visual
 
 Para revisar la UI sin navegador interactivo: levantar Chrome headless con `--remote-debugging-port=9333` y controlarlo por CDP con un script de Node para hacer clics y capturas. Así se validaron los flujos y las vistas en escritorio (1440 px) y móvil (390 px).
+
+- Para móvil usar `Emulation.setDeviceMetricsOverride` (con `--window-size`, Chrome headless no baja de ~500 px y la captura sale cortada).
+- El `--user-data-dir` de Chrome y los scripts van en una carpeta temporal, nunca dentro del repo.
