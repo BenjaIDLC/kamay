@@ -7,7 +7,7 @@ import { CatalogStore } from '../core/catalog-store';
 import { ConfiguratorStore } from '../core/configurator-store';
 import { configurationLabels } from '../shared/labels';
 
-const highlights: Category[] = ['cpu', 'gpu', 'ram', 'storage'];
+const categoryOrder: Category[] = ['cpu', 'gpu', 'ram', 'storage', 'motherboard', 'psu', 'case', 'cooler'];
 
 @Component({
   selector: 'app-builds',
@@ -23,34 +23,47 @@ const highlights: Category[] = ['cpu', 'gpu', 'ram', 'storage'];
       } @else if (builds.error()) {
         <div class="notice notice--error" role="alert"><p>No se pudieron cargar los equipos. ¿Está corriendo la API?</p></div>
       } @else if (builds.hasValue()) {
-        <ul class="grid builds">
+        <ul class="builds">
           @for (build of builds.value().builds; track build.id) {
-            <li class="card">
-              <span class="tag">{{ catalog.profile(build.profileId)?.name }}</span>
-              <h2 class="build__name">{{ build.name }}</h2>
-              <p>{{ build.tagline }}</p>
+            <li class="card build">
+              <div class="build__head">
+                <span class="tag">{{ catalog.profile(build.profileId)?.name }}</span>
+                <h2 class="build__name">{{ build.name }}</h2>
+                <p class="muted">{{ build.tagline }}</p>
+              </div>
               <dl class="specs">
-                @for (part of highlighted(build); track part.id) {
-                  <div><dt>{{ catalog.categoryName(part.category) }}</dt><dd>{{ part.brand }} {{ part.name }}</dd></div>
+                @for (row of rows(build); track row.category) {
+                  <div class="specs__row">
+                    <dt>{{ catalog.categoryName(row.category) }}</dt>
+                    @if (row.part; as part) {
+                      <dd>{{ part.brand }} {{ part.name }}</dd>
+                    } @else {
+                      <dd class="muted">Gráficos integrados del procesador</dd>
+                    }
+                  </div>
                 }
               </dl>
-              <p class="status status--{{ build.validation.status }}">{{ statusLabels[build.validation.status] }} · {{ build.validation.parts.length }} piezas</p>
-              <div class="card__foot">
-                <span class="price">{{ build.validation.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</span>
-                <span class="small muted">Precio referencial</span>
+              <div class="build__foot">
+                <div>
+                  <span class="price">{{ build.validation.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</span>
+                  <span class="small muted"> · Precio referencial</span>
+                </div>
+                <p class="status status--{{ build.validation.status }}">{{ statusLabels[build.validation.status] }} · {{ build.validation.parts.length }} piezas</p>
               </div>
-              <div class="actions">
-                <button type="button" class="btn btn--primary btn--small" (click)="customize(build, '/pedido')">Pedir este equipo</button>
-                <button type="button" class="btn btn--small" (click)="customize(build, '/configurador')">Personalizar</button>
+              <div class="build__actions">
+                <button type="button" class="btn btn--primary" (click)="customize(build, '/pedido')">Pedir este equipo<span class="visually-hidden"> {{ build.name }}</span></button>
+                <button type="button" class="btn" (click)="customize(build, '/configurador')">Personalizar<span class="visually-hidden"> {{ build.name }}</span></button>
               </div>
             </li>
           }
           <li class="card card--custom">
-            <h2 class="build__name">Arma uno desde cero</h2>
-            <p>Indica tu uso y presupuesto, parte de una base o elige cada pieza tú mismo. Validamos la compatibilidad en cada cambio.</p>
-            <div class="actions" style="margin-top: auto">
-              <a routerLink="/configurador" class="btn btn--light btn--small" (click)="configurator.reset()">Armar personalizado</a>
-              <a routerLink="/asesor" class="btn btn--light btn--small">Pedir ayuda a la IA</a>
+            <div class="build__head">
+              <h2 class="build__name">Arma uno desde cero</h2>
+              <p>Indica tu uso y presupuesto, parte de una base o elige cada pieza tú mismo. Validamos la compatibilidad en cada cambio.</p>
+            </div>
+            <div class="build__actions">
+              <a routerLink="/configurador" class="btn btn--light" (click)="configurator.reset()">Armar personalizado</a>
+              <a routerLink="/asesor" class="btn btn--light">Pedir ayuda a la IA</a>
             </div>
           </li>
         </ul>
@@ -58,13 +71,26 @@ const highlights: Category[] = ['cpu', 'gpu', 'ram', 'storage'];
     </div>
   `,
   styles: `
-    .builds { list-style: none; padding: 0; margin: 0; }
-    .build__name { font-size: 1.5rem; margin: 0; }
-    .specs { margin: 0; display: grid; gap: 6px; font-size: 0.9rem; }
-    .specs div { display: grid; grid-template-columns: 7.5rem 1fr; gap: 8px; }
+    .builds { list-style: none; padding: 0; margin: 0; display: grid; gap: 24px; }
+    @media (min-width: 768px) { .builds { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .build { padding: 28px; gap: 20px; }
+    .build__head { display: grid; gap: 8px; justify-items: start; }
+    .build__name { font-size: 1.6rem; margin: 0; }
+
+    .specs { margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 0.9rem; }
+    .specs__row { display: grid; grid-template-columns: 9.5rem minmax(0, 1fr); gap: 12px; padding: 10px 16px; }
+    .specs__row + .specs__row { border-top: 1px solid var(--line); }
     .specs dt { color: var(--muted); }
     .specs dd { margin: 0; font-weight: 600; }
-    .card--custom { background: radial-gradient(120% 140% at 90% 10%, #a855f7 0%, #7c3aed 45%, #4c1d95 100%); color: #fff; }
+    @media (max-width: 420px) { .specs__row { grid-template-columns: 1fr; gap: 2px; } }
+
+    .build__foot { margin-top: auto; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; }
+    .build__foot .price { font-size: 1.6rem; }
+    .build__actions { display: grid; gap: 12px; }
+    @media (min-width: 480px) { .build__actions { grid-template-columns: 1fr 1fr; } }
+    .build__actions .btn { width: 100%; }
+
+    .card--custom { grid-column: 1 / -1; padding: 28px; gap: 20px; background: radial-gradient(120% 140% at 90% 10%, #a855f7 0%, #7c3aed 45%, #4c1d95 100%); color: #fff; }
     .card--custom :focus-visible { outline-color: #fff; }
   `,
 })
@@ -75,8 +101,9 @@ export default class Builds {
   protected readonly builds = httpResource<{ builds: Build[] }>(() => '/api/builds');
   protected readonly statusLabels = configurationLabels;
 
-  protected highlighted(build: Build) {
-    return highlights.flatMap(category => build.validation.parts.filter(part => part.category === category));
+  /** Every category in a fixed order, so all cards line up; the GPU row stays even when the build has none. */
+  protected rows(build: Build) {
+    return categoryOrder.map(category => ({ category, part: build.validation.parts.find(part => part.category === category) }));
   }
 
   protected customize(build: Build, target: string) {

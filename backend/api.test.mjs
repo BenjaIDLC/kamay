@@ -153,6 +153,21 @@ test('advisor runs tools against the real catalog and returns the validated prop
   assert.equal(toolOutput.builds[0].id, 'kamay-gaming');
 });
 
+test('advisor catalog search shows products outside the customer use', async () => {
+  process.env.OPENAI_API_KEY = 'test';
+  const bodies = [];
+  const replies = [
+    { status: 'completed', output: [{ type: 'function_call', name: 'search_catalog', call_id: 'a', arguments: JSON.stringify({ category: 'motherboard' }) }] },
+    { status: 'completed', output: [{ type: 'message', content: [{ type: 'output_text', text: 'Listo.' }] }] },
+  ];
+  await advise([{ role: 'user', content: '¿Tienen la MSI PRO Z890-P?' }], null, async (_url, init) => { bodies.push(JSON.parse(init.body)); return new Response(JSON.stringify(replies.shift())); });
+  const boards = JSON.parse(bodies[1].input.at(-1).output);
+  const z890 = boards.find(board => board.id === 'msi-z890-pro');
+  assert.equal(z890.name, 'MSI PRO Z890-P WiFi');
+  assert.ok(!z890.suggestedFor.includes('gaming'));
+  assert.ok(boards.every(board => board.category === 'motherboard'));
+});
+
 test('advisor reports invalid tool input to the model and fails cleanly without a key', async () => {
   process.env.OPENAI_API_KEY = 'test';
   const bodies = [];

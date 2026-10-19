@@ -18,7 +18,12 @@ Tu trabajo: entender qué hace el cliente y cuánto puede gastar, y proponer un 
 - Si falta el uso o el presupuesto (en soles), pregúntalo antes de proponer. Una pregunta a la vez.
 - Empieza desde get_builds para el uso del cliente; ajusta piezas con search_catalog si el presupuesto o la necesidad lo piden.
 - Solo puedes mencionar productos y precios devueltos por las herramientas. Nunca inventes productos ni precios.
-- Antes de presentar una configuración llama SIEMPRE a validate_configuration. Si el resultado tiene bloqueos o
+- Para revisar varias categorías llama una sola vez a search_catalog con category null, no una vez por categoría.
+- Si el cliente nombra un producto, búscalo con search_catalog (los nombres pueden no coincidir exactamente) antes de decir
+  que no lo tenemos. Si el cliente pide un cambio concreto, valida una vez la configuración con ese cambio y explica el
+  resultado; si es incompatible, di por qué y sugiere una alternativa del catálogo sin validarla hasta que la acepte.
+- No muestres nombres internos de campos o herramientas (recommended, status, checks…); explícalo con palabras.
+- Antes de presentar una configuración llama SIEMPRE a validate_configuration. Si una propuesta tuya tiene bloqueos o
   está incompleta, corrígela y vuelve a validar. Nunca digas que un equipo es compatible sin validarlo.
 - Al presentar: lista cada pieza con su precio, el total, y explica en 2–3 frases por qué encaja con su uso.
   Menciona las advertencias que devolvió la validación. Si recommended=false, explica por qué.
@@ -32,9 +37,9 @@ const nullableProfile = { type: ['string', 'null'], enum: [...profileIds, null] 
 const nullableBudget = { type: ['number', 'null'] };
 const tools = [
   { type: 'function', name: 'search_catalog', strict: true,
-    description: 'Lista productos del catálogo con precio (PEN), especificaciones y justificación. Filtra opcionalmente por categoría y uso.',
-    parameters: { type: 'object', additionalProperties: false, required: ['category', 'profileId'], properties: {
-      category: { type: ['string', 'null'], enum: [...categories, null] }, profileId: nullableProfile } } },
+    description: 'Lista todos los productos del catálogo (opcionalmente de una categoría) con precio (PEN), especificaciones, justificación y los usos para los que se sugieren.',
+    parameters: { type: 'object', additionalProperties: false, required: ['category'], properties: {
+      category: { type: ['string', 'null'], enum: [...categories, null] } } } },
   { type: 'function', name: 'get_builds', strict: true,
     description: 'Devuelve los equipos base curados de Kamay, ya validados, con su total y si caben en el presupuesto.',
     parameters: { type: 'object', additionalProperties: false, required: ['profileId', 'budget'], properties: {
@@ -53,9 +58,10 @@ function runTool(name: string | undefined, rawArgs: string | undefined): { outpu
   try { args = JSON.parse(rawArgs ?? '{}'); } catch { return { output: { error: 'Argumentos inválidos.' } }; }
   try {
     if (name === 'search_catalog') {
+      // Never filter by use: a product the customer names must always be findable, even if it is not suggested for their use.
       return { output: catalog
-        .filter(part => (!args['category'] || part.category === args['category']) && (!args['profileId'] || part.uses.includes(args['profileId'] as never)))
-        .map(({ id, category, name, price, specs, rationale }) => ({ id, category, name, price, specs, rationale })) };
+        .filter(part => !args['category'] || part.category === args['category'])
+        .map(({ id, category, brand, name, price, uses, specs, rationale }) => ({ id, category, name: `${brand} ${name}`, price, suggestedFor: uses, specs, rationale })) };
     }
     if (name === 'get_builds') {
       const { profileId, budget } = parseConfiguration({ profileId: args['profileId'], budget: args['budget'] });
@@ -74,13 +80,25 @@ function runTool(name: string | undefined, rawArgs: string | undefined): { outpu
   }
 }
 
-function describeContext(context: ConfigurationInput | null) {
-  if (!context || (!context.componentIds.length && !context.profileId && !context.budget)) return '';
-  return `\n\nContexto: el cliente tiene abierto el configurador con uso=${context.profileId ?? 'sin elegir'}, ` +
-    `presupuesto=${context.budget ?? 'sin indicar'} PEN y piezas=${JSON.stringify(context.componentIds)}.`;
+export type AdviceContext = { configuration: ConfigurationInput | null; proposal: ConfigurationInput | null };
+
+function describeContext(context: AdviceContext | null) {
+  let text = '';
+  const configuration = context?.configuration;
+  if (configuration && (configuration.componentIds.length || configuration.profileId || configuration.budget)) {
+    text += `\n\nContexto: el cliente tiene abierto el configurador con uso=${configuration.profileId ?? 'sin elegir'}, ` +
+      `presupuesto=${configuration.budget ?? 'sin indicar'} PEN y piezas=${JSON.stringify(configuration.componentIds)}.`;
+  }
+  // The chat history only keeps text, so the ids of the last proposal are passed here to avoid re-searching the catalog.
+  const proposal = context?.proposal;
+  if (proposal?.componentIds.length) {
+    text += `\n\nTu última propuesta validada en esta conversación: uso=${proposal.profileId ?? 'sin elegir'}, ` +
+      `presupuesto=${proposal.budget ?? 'sin indicar'} PEN y piezas=${JSON.stringify(proposal.componentIds)}.`;
+  }
+  return text;
 }
 
-export async function advise(messages: Message[], context: ConfigurationInput | null = null, request: typeof fetch = fetch) {
+export async function advise(messages: Message[], context: AdviceContext | null = null, request: typeof fetch = fetch) {
   const key = process.env['OPENAI_API_KEY'];
   if (!key?.trim()) throw new AdvisorError(503, 'El asesor no está configurado: falta OPENAI_API_KEY en el servidor.');
   const input: unknown[] = [...messages];
@@ -117,6 +135,7 @@ export async function advise(messages: Message[], context: ConfigurationInput | 
       return { reply, proposal };
     }
     for (const call of calls) {
+      if (process.env['ADVISOR_DEBUG']) console.log(`[asesor] ronda ${turn + 1}: ${call.name} ${call.arguments}`);
       const result = runTool(call.name, call.arguments);
       if (result.proposal) proposal = result.proposal;
       input.push({ type: 'function_call_output', call_id: call.call_id, output: JSON.stringify(result.output) });

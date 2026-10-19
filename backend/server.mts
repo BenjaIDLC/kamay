@@ -38,8 +38,9 @@ export function createApp(orders = new OrderStore(process.env['ORDERS_FILE'] ?? 
       res.status(400).json({ error: 'Envía entre 1 y 30 mensajes; el último debe ser del usuario.' });
       return;
     }
-    const context = req.body.context ? parseConfiguration(req.body.context) : null;
-    try { res.json(await advise(messages as Message[], context)); }
+    const configuration = req.body.context ? parseConfiguration(req.body.context) : null;
+    const proposal = req.body.proposal ? parseConfiguration(req.body.proposal) : null;
+    try { res.json(await advise(messages as Message[], { configuration, proposal })); }
     catch (error) {
       if (!(error instanceof AdvisorError)) throw error;
       res.status(error.status).json({ error: error.message });

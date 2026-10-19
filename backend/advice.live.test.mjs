@@ -10,10 +10,11 @@ test('live advisor asks for missing data, proposes a validated build and rejects
   const server = createApp().listen(0, '127.0.0.1');
   await once(server, 'listening');
   const messages = [];
+  let proposal = null; // Sent back like the frontend does, so the model knows the ids it proposed.
   async function ask(content) {
     messages.push({ role: 'user', content });
     const response = await fetch(`http://127.0.0.1:${server.address().port}/api/advice`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages }),
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ messages, proposal }),
     });
     const result = await response.json();
     assert.equal(response.status, 200, JSON.stringify(result));
@@ -22,6 +23,7 @@ test('live advisor asks for missing data, proposes a validated build and rejects
       // The proposal must match what the engine says about those same parts.
       const check = validateConfiguration({ componentIds: result.proposal.componentIds, profileId: result.proposal.profileId, budget: result.proposal.budget });
       assert.equal(result.proposal.status, check.status);
+      proposal = { componentIds: result.proposal.componentIds, profileId: result.proposal.profileId, budget: result.proposal.budget };
     }
     messages.push({ role: 'assistant', content: result.reply });
     console.log(JSON.stringify({ user: content, reply: result.reply, proposal: result.proposal }));

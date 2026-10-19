@@ -14,8 +14,9 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 ## Estado actual
 
 - Funciona de punta a punta: Inicio (hero rotativo) → Equipos → Componentes → Configurador → Checkout con pago simulado → Seguimiento del pedido. Además, Asesor IA y gestión de pedidos (`/pedidos`).
-- `npm run api:test` cubre motor, API, pedidos y asesor con un proveedor simulado (13 tests).
-- **Bloqueo:** la clave de OpenAI en `.env` (organización personal `user-szibvoo…`) da `insufficient_quota`: falta cargar créditos de API en platform.openai.com. La suscripción de ChatGPT no los incluye. Cuando haya saldo, correr `npm run api:test:live` y afinar el prompt de [backend/advisor.mts](backend/advisor.mts).
+- `npm run api:test` cubre motor, API, pedidos y asesor con un proveedor simulado (14 tests).
+- OpenAI con créditos cargados: `npm run api:test:live` pasa (conversación de 3 turnos, unos centavos por corrida). Con `ADVISOR_DEBUG=1` se registran las llamadas a herramientas.
+- Asesor: `search_catalog` no filtra por uso (devuelve `suggestedFor`), y el cliente reenvía la última propuesta (`proposal` en `/api/advice`) para que el modelo conozca sus IDs; sin eso, el modelo gastaba las 8 rondas buscando piezas.
 
 ## Decisiones tomadas (no revertir sin consultar)
 
@@ -33,7 +34,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 
 ## Pendiente
 
-1. Cargar créditos de OpenAI y probar y afinar el asesor con conversaciones reales.
+1. Seguir afinando el asesor con conversaciones reales (respuestas aún algo largas).
 2. Evaluación del asesor (OE5): casos de prueba (datos completos, datos faltantes, presupuesto insuficiente, cambio incompatible, fuera de alcance) y una rúbrica.
 3. Fotografía real de producto para el hero y las tarjetas.
 

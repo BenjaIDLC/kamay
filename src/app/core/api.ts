@@ -104,6 +104,8 @@ export function errorMessage(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) return 'No se pudo conectar con el servidor de Kamay. ¿Está corriendo la API?';
     if (typeof error.error?.error === 'string') return error.error.error;
+    // The API always answers with a JSON error; a bare 5xx comes from the dev proxy when the API is down.
+    if (error.status >= 500) return 'No se pudo conectar con el servidor de Kamay. ¿Está corriendo la API (npm run api:start)?';
   }
   return 'Ocurrió un error inesperado.';
 }
@@ -124,8 +126,8 @@ export class Api {
     return this.http.post<Validation>('/api/configurations/validate', input);
   }
 
-  advise(messages: ChatMessage[], context: ConfigurationInput | null) {
-    return this.http.post<{ reply: string; proposal: Proposal | null }>('/api/advice', { messages, context });
+  advise(messages: ChatMessage[], context: ConfigurationInput | null, proposal: ConfigurationInput | null) {
+    return this.http.post<{ reply: string; proposal: Proposal | null }>('/api/advice', { messages, context, proposal });
   }
 
   orders() {

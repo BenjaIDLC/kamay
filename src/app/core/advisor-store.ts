@@ -37,8 +37,10 @@ export class AdvisorStore {
     this.error.set(null);
     const messages = this.entries().map(({ role, content }) => ({ role, content }));
     const context = this.configurator.componentIds().length || this.configurator.profileId() ? this.configurator.input() : null;
+    const last = this.entries().filter(entry => entry.proposal).at(-1)?.proposal;
+    const lastProposal = last ? { componentIds: last.componentIds, profileId: last.profileId, budget: last.budget } : null;
     try {
-      const { reply, proposal } = await firstValueFrom(this.api.advise(messages, context));
+      const { reply, proposal } = await firstValueFrom(this.api.advise(messages, context, lastProposal));
       this.entries.update(entries => [...entries, { role: 'assistant', content: reply, proposal }]);
     } catch (error) {
       this.error.set(errorMessage(error));
