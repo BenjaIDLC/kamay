@@ -24,10 +24,12 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 
 ## Presentación (en curso)
 
-- Deck en claude.ai: https://claude.ai/artifact/3fyFVwHgLUTmjmtahycvkr (privado; se comparte desde su menú Share). 13 diapositivas: portada, propuesta, **arquitectura** (diagrama, motor de 8 reglas, frontend con signals), librerías, **asesor IA** (idea "la IA conversa, el motor decide", flujo, herramientas, límites prompt/código, lo que aprendimos al probar con IA real, evaluación) y cierre.
-- El usuario quitó de arquitectura las diapositivas "El cliente nunca decide" y "Decisiones"; esa idea se cuenta dentro del guion del diagrama.
-- Guion de arquitectura (diapositivas 3–5) ya redactado en el chat con el formato nombre técnico → explicación → paralelo (salón / mesero / cocina / proveedor; revisión técnica con semáforo; hoja de cálculo). Aún **no** se copió a las notas del orador.
-- Siguiente: confirmar si el guion va a las notas, redactar el guion del asesor IA con el mismo formato, y revisar en el deck: `[Integrantes del equipo]` en la portada, el costo "≈ $0,02 por mensaje" (estimado, verificar en el panel de uso de OpenAI) y si el repo de GitHub del cierre es público.
+- Guion en [docs/guion-presentacion.md](docs/guion-presentacion.md): **5 minutos, 7 diapositivas**, con el asesor IA como hilo conductor. Se sigue un mensaje del chat al pedido y por el camino se explican la arquitectura, el motor de 8 reglas y el frontend. Formato nombre técnico → explicación → paralelo del restaurante (salón, mesero, cocina, proveedor y asesor de sala). Incluye respuestas para preguntas frecuentes.
+- Títulos descriptivos, sin frases de marketing. El usuario cortó "Propuesta", "Límites del prompt" y "Lo que aprendimos"; esos temas quedan en "Si preguntan" o resumidos.
+- Integrantes: Benjamin Andres Illescas De la Cruz, Ayrton Josue Vilca Navarro y Diego Medina De la Rosa.
+- El deck en claude.ai (https://claude.ai/artifact/3fyFVwHgLUTmjmtahycvkr) ya sigue el guion: 7 diapositivas, con el texto del guion en las notas del orador. Cualquiera con el enlace puede verlo. El usuario también lo edita a mano: leer siempre la versión actual antes de publicar.
+- Una versión anterior de la presentación prometía más de lo que hace el MVP: base de datos MySQL de 19 tablas, 7 herramientas, usuarios, postventa y evaluación con 30–50 escenarios. Distinguir siempre lo **diseñado** de lo **implementado**.
+- Por verificar: costo real por mensaje (panel de uso de OpenAI) y si el repo de GitHub se hace público.
 
 ## Decisiones tomadas (no revertir sin consultar)
 
