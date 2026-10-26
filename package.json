@@ -10,7 +10,8 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "docs": "typedoc"
   },
   "private": true,
   "packageManager": "npm@12.2.0",
@@ -35,6 +36,7 @@
     "@types/node": "^22.12.0",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
+    "typedoc": "^0.28.20",
     "typescript": "~6.0.2",
     "vitest": "^5.0.0"
   }

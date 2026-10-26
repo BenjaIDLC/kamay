@@ -1,11 +1,17 @@
+/**
+ * Pedidos simulados: creación con revalidación en el servidor y avance por etapas.
+ * @module
+ */
 import { randomUUID } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import { InputError, parseConfiguration, validateConfiguration } from './compatibility.mjs';
 
+/** Etapas del pedido, en orden. */
 export const stages = ['pagado', 'ensamblaje', 'control_calidad', 'enviado', 'entregado'] as const;
 export type Stage = typeof stages[number];
 
+/** Pedido guardado, con los precios congelados al momento de la compra. */
 export type Order = {
   id: string;
   createdAt: string;
@@ -19,23 +25,37 @@ export type Order = {
   history: { stage: Stage; at: string }[];
 };
 
+/** El pedido no existe; la API la responde con HTTP 404. */
 export class NotFoundError extends Error {}
 
-// shortcut: JSON file storage for the demo, replace with a database before real use.
+/**
+ * Acceso a los pedidos guardados. Es la única clase que toca el almacenamiento, así que pasar a una base
+ * de datos solo cambia esta clase.
+ *
+ * Atajo del MVP: guarda en un archivo JSON; reemplazar por una base de datos antes de un uso real.
+ */
 export class OrderStore {
+  /** @param file - Ruta del archivo JSON donde se guardan los pedidos. */
   constructor(private file: string) {}
 
+  /** Todos los pedidos, del más reciente al más antiguo. */
   list(): Order[] {
     try { return JSON.parse(readFileSync(this.file, 'utf8')) as Order[]; }
     catch { return []; }
   }
 
+  /** @throws {@link NotFoundError} si no existe. */
   get(id: string): Order {
     const order = this.list().find(order => order.id === id);
     if (!order) throw new NotFoundError('Pedido no encontrado.');
     return order;
   }
 
+  /**
+   * Crea un pedido en etapa `pagado` (pago simulado).
+   * @param body - Configuración y `customer` (nombre y correo) tal como llegan del cliente.
+   * @throws InputError si los datos son inválidos o la configuración no es válida.
+   */
   create(body: unknown, now = new Date()): Order {
     const input = parseConfiguration(body);
     const customer = (body as Record<string, unknown>)['customer'] as Record<string, unknown> | undefined;
@@ -57,6 +77,10 @@ export class OrderStore {
     return order;
   }
 
+  /**
+   * Pasa el pedido a la siguiente etapa y la registra en el historial.
+   * @throws {@link NotFoundError} si no existe; {@link InputError} si ya fue entregado.
+   */
   advance(id: string, now = new Date()): Order {
     const orders = this.list();
     const order = orders.find(order => order.id === id);

@@ -1,13 +1,20 @@
+/**
+ * Catálogo de productos de Kamay: categorías, especificaciones y los 33 productos reales con precio referencial en soles.
+ * @module
+ */
 import type { ProfileId } from './profiles.mjs';
 
+/** Las 8 categorías de pieza, en el orden en que se muestran. */
 export const categories = ['cpu', 'motherboard', 'ram', 'gpu', 'storage', 'psu', 'case', 'cooler'] as const;
 export type Category = typeof categories[number];
 
+/** Nombre en español de cada categoría. */
 export const categoryNames: Record<Category, string> = {
   cpu: 'Procesador', motherboard: 'Placa madre', ram: 'Memoria RAM', gpu: 'Tarjeta gráfica',
   storage: 'Almacenamiento', psu: 'Fuente de poder', case: 'Gabinete', cooler: 'Refrigeración',
 };
 
+/** Especificaciones técnicas; cada categoría usa solo los campos que le corresponden. */
 export type Specs = {
   socket?: string;            // cpu, motherboard
   cores?: number;             // cpu: núcleos físicos
@@ -32,6 +39,7 @@ export type Specs = {
   heightMm?: number;          // cooler
 };
 
+/** Un producto del catálogo. */
 export type Component = {
   id: string;
   category: Category;
@@ -46,6 +54,7 @@ export type Component = {
 const all: ProfileId[] = ['diseno', 'render_cpu', 'render_gpu', 'gaming'];
 
 // Especificaciones tomadas de fichas públicas de los fabricantes; los precios son referenciales en PEN, no ofertas de venta.
+/** Productos a la venta. Agregar un producto es añadir una fila. */
 export const catalog: Component[] = [
   // Procesadores
   { id: 'ryzen5-9600x', category: 'cpu', brand: 'AMD', name: 'Ryzen 5 9600X', price: 950, uses: ['diseno', 'gaming'],
@@ -166,4 +175,5 @@ export const catalog: Component[] = [
     specs: { sockets: ['AM5', 'LGA1700', 'LGA1851'], heightMm: 168 } },
 ];
 
+/** Busca un producto por su identificador; `undefined` si no existe. */
 export const findPart = (id: string) => catalog.find(part => part.id === id);

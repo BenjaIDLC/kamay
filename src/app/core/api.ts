@@ -1,3 +1,7 @@
+/**
+ * Tipos compartidos con la API y cliente HTTP del frontend.
+ * @module
+ */
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Service } from '@angular/core';
 
@@ -100,6 +104,7 @@ export const stageNames: Record<Stage, string> = {
   pagado: 'Pago confirmado', ensamblaje: 'Ensamblaje', control_calidad: 'Control de calidad', enviado: 'Enviado', entregado: 'Entregado',
 };
 
+/** Convierte un error HTTP en un mensaje en español para mostrar al usuario. */
 export function errorMessage(error: unknown): string {
   if (error instanceof HttpErrorResponse) {
     if (error.status === 0) return 'No se pudo conectar con el servidor de Kamay. ¿Está corriendo la API?';
@@ -110,6 +115,7 @@ export function errorMessage(error: unknown): string {
   return 'Ocurrió un error inesperado.';
 }
 
+/** Cliente de la API REST de Kamay: un método por endpoint. */
 @Service()
 export class Api {
   private readonly http = inject(HttpClient);

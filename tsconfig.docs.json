@@ -1,0 +1,11 @@
+/* Solo para generar la documentación del código con TypeDoc (npm run docs). */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noEmit": true
+  },
+  "include": ["backend/*.mts", "src/app/core/*.ts"]
+}

@@ -5,7 +5,9 @@ import { ConfiguratorStore } from './configurator-store';
 
 export type AdvisorEntry = ChatMessage & { proposal?: Proposal | null };
 
-// Lives at the root so the conversation survives navigating to the configurator and back.
+/**
+ * Conversación con el asesor IA. Vive en la raíz para que no se pierda al ir al configurador y volver.
+ */
 @Service()
 export class AdvisorStore {
   private readonly api = inject(Api);
@@ -15,6 +17,7 @@ export class AdvisorStore {
   readonly pending = signal(false);
   readonly error = signal<string | null>(null);
 
+  /** Agrega el mensaje del usuario y pide la respuesta, enviando la configuración actual y la última propuesta. */
   async send(text: string) {
     const content = text.trim();
     if (!content || this.pending()) return;
@@ -22,11 +25,12 @@ export class AdvisorStore {
     await this.request();
   }
 
-  /** Re-sends the conversation after a failure; the user's last message is kept. */
+  /** Reenvía la conversación tras un error; se conserva el último mensaje del usuario. */
   retry() {
     return this.request();
   }
 
+  /** Empieza una conversación nueva. */
   clear() {
     this.entries.set([]);
     this.error.set(null);

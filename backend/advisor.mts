@@ -1,9 +1,17 @@
+/**
+ * Asesor IA: conversa con el cliente usando la API de OpenAI y tres herramientas del backend
+ * (`search_catalog`, `get_builds` y `validate_configuration`). Solo puede proponer productos del catálogo
+ * y toda propuesta pasa por el motor de compatibilidad.
+ * @module
+ */
 import { catalog, categories } from './catalog.mjs';
 import { InputError, parseConfiguration, validateConfiguration, type ConfigurationInput } from './compatibility.mjs';
 import { profileIds, profiles } from './profiles.mjs';
 import { listBuilds } from './builds.mjs';
 
+/** Un mensaje del chat. */
 export type Message = { role: 'user' | 'assistant'; content: string };
+/** Error del asesor con el código HTTP que debe responder la API. */
 export class AdvisorError extends Error {
   constructor(public status: number, message: string) { super(message); }
 }
@@ -51,7 +59,7 @@ const tools = [
 ];
 
 type Output = { type: string; name?: string; arguments?: string; call_id?: string; content?: { type: string; text?: string }[] };
-type Proposal = ConfigurationInput & { status: string; total: number; recommended: boolean };
+export type Proposal = ConfigurationInput & { status: string; total: number; recommended: boolean };
 
 function runTool(name: string | undefined, rawArgs: string | undefined): { output: unknown; proposal?: Proposal } {
   let args: Record<string, unknown>;
@@ -80,6 +88,7 @@ function runTool(name: string | undefined, rawArgs: string | undefined): { outpu
   }
 }
 
+/** Lo que el cliente tiene abierto en el configurador y la última propuesta del asesor. */
 export type AdviceContext = { configuration: ConfigurationInput | null; proposal: ConfigurationInput | null };
 
 function describeContext(context: AdviceContext | null) {
@@ -98,6 +107,14 @@ function describeContext(context: AdviceContext | null) {
   return text;
 }
 
+/**
+ * Responde al último mensaje del cliente. El modelo puede llamar a las herramientas hasta 8 rondas antes de responder.
+ * @param messages - Conversación completa; el último mensaje es del usuario.
+ * @param context - Configuración actual y última propuesta, para que el modelo conozca los IDs.
+ * @param request - Implementación de `fetch`; los tests pasan un proveedor simulado.
+ * @returns Texto de la respuesta y la última configuración validada por el motor, si hubo.
+ * @throws {@link AdvisorError} sin clave, sin créditos, por error del proveedor o si no termina en 8 rondas.
+ */
 export async function advise(messages: Message[], context: AdviceContext | null = null, request: typeof fetch = fetch) {
   const key = process.env['OPENAI_API_KEY'];
   if (!key?.trim()) throw new AdvisorError(503, 'El asesor no está configurado: falta OPENAI_API_KEY en el servidor.');

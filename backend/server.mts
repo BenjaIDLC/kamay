@@ -1,3 +1,7 @@
+/**
+ * API REST de Kamay (Express). Recibe las peticiones, valida la entrada y delega en los módulos de dominio.
+ * @module
+ */
 import express from 'express';
 import { pathToFileURL } from 'node:url';
 import { catalog, categories, categoryNames } from './catalog.mjs';
@@ -7,6 +11,10 @@ import { profiles } from './profiles.mjs';
 import { listBuilds } from './builds.mjs';
 import { NotFoundError, OrderStore } from './orders.mjs';
 
+/**
+ * Crea la aplicación Express con todas las rutas `/api` y el manejo de errores.
+ * @param orders - Almacén de pedidos; los tests pasan uno con un archivo temporal.
+ */
 export function createApp(orders = new OrderStore(process.env['ORDERS_FILE'] ?? 'data/orders.json')) {
   const app = express();
   app.disable('x-powered-by');

@@ -2,7 +2,7 @@ import { httpResource } from '@angular/common/http';
 import { computed, Service } from '@angular/core';
 import type { Catalog, Category, Part, Profile, ProfileId } from './api';
 
-// The catalog is small and shared by every page, so it is loaded once.
+/** Catálogo, perfiles y categorías. Es pequeño y lo usan todas las páginas, así que se carga una sola vez. */
 @Service()
 export class CatalogStore {
   readonly resource = httpResource<Catalog>(() => '/api/catalog');

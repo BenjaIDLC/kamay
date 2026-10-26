@@ -1,7 +1,12 @@
+/**
+ * Equipos base curados: un punto de partida por cada perfil de uso.
+ * @module
+ */
 import { validateConfiguration } from './compatibility.mjs';
 import type { ProfileId } from './profiles.mjs';
 
-type Build = { id: string; name: string; tagline: string; profileId: ProfileId; componentIds: string[] };
+/** Equipo base: nombre comercial, perfil y piezas. */
+export type Build = { id: string; name: string; tagline: string; profileId: ProfileId; componentIds: string[] };
 
 // Bases curadas: un punto de partida por uso, nunca una promesa de rendimiento.
 export const builds: Build[] = [
@@ -15,6 +20,11 @@ export const builds: Build[] = [
     componentIds: ['ryzen7-9800x3d', 'msi-b650-gaming-plus', 'corsair-ddr5-32', 'rtx5070-msi-ventus', 'kingston-nv3-1tb', 'corsair-rm750e', 'corsair-4000d', 'thermalright-pa120'] },
 ];
 
+/**
+ * Devuelve los equipos base validados por el motor de compatibilidad.
+ * @param profileId - Si se indica, solo devuelve el equipo de ese uso.
+ * @param budget - Presupuesto en soles para calcular si cada equipo entra en él.
+ */
 export function listBuilds(profileId: ProfileId | null = null, budget: number | null = null) {
   return builds
     .filter(build => !profileId || build.profileId === profileId)

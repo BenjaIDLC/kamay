@@ -1,0 +1,15 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "Kamay — documentación del código",
+  "entryPoints": [
+    "backend/*.mts",
+    "src/app/core/*.ts"
+  ],
+  "tsconfig": "tsconfig.docs.json",
+  "out": "dist/docs",
+  "readme": "none",
+  "excludePrivate": true,
+  "navigationLinks": {
+    "Arquitectura": "https://github.com/BenjaIDLC/kamay/blob/master/docs/arquitectura.md"
+  }
+}

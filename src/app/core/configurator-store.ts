@@ -5,7 +5,10 @@ import { CatalogStore } from './catalog-store';
 
 const storageKey = 'kamay.configuration';
 
-// The configuration being built, shared by the configurator, the advisor and checkout.
+/**
+ * Configuración que se está armando, compartida por el configurador, el asesor y el checkout.
+ * Se guarda en localStorage y se valida en el servidor en cada cambio.
+ */
 @Service()
 export class ConfiguratorStore {
   private readonly catalog = inject(CatalogStore);
@@ -45,6 +48,7 @@ export class ConfiguratorStore {
     });
   }
 
+  /** Reemplaza la configuración, por ejemplo con un equipo base o una propuesta del asesor. */
   load(input: Partial<ConfigurationInput>, origin: string | null = null) {
     this.componentIds.set(input.componentIds ?? []);
     if (input.profileId !== undefined) this.profileId.set(input.profileId);
@@ -52,14 +56,17 @@ export class ConfiguratorStore {
     this.origin.set(origin);
   }
 
+  /** Elige una pieza, reemplazando la que hubiera de su categoría. */
   choose(part: Part) {
     this.componentIds.update(ids => [...ids.filter(id => this.catalog.part(id)?.category !== part.category), part.id]);
   }
 
+  /** Quita una pieza de la configuración. */
   remove(part: Part) {
     this.componentIds.update(ids => ids.filter(id => id !== part.id));
   }
 
+  /** Vacía la configuración para armar desde cero. */
   reset() {
     this.load({ componentIds: [], profileId: null, budget: null });
   }

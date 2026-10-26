@@ -1,6 +1,13 @@
+/**
+ * Perfiles de uso que Kamay sabe orientar y sus requisitos mínimos.
+ * @module
+ */
+
+/** Identificadores de los 4 perfiles de uso. */
 export const profileIds = ['diseno', 'render_cpu', 'render_gpu', 'gaming'] as const;
 export type ProfileId = typeof profileIds[number];
 
+/** Un perfil de uso con los umbrales que revisa la regla «Adecuación al uso». */
 export type Profile = {
   id: ProfileId;
   name: string;
@@ -25,4 +32,5 @@ export const profiles: Profile[] = [
     minRamGb: 16, minStorageGb: 1000, minCores: 6, needsGpu: true, minVramGb: 8 },
 ];
 
+/** Busca un perfil por su identificador; `null` si no existe o no se eligió. */
 export const findProfile = (id: string | null | undefined) => profiles.find(profile => profile.id === id) ?? null;

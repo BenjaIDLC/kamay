@@ -1,18 +1,31 @@
+/**
+ * Motor de compatibilidad: 8 reglas que revisan una configuración y calculan su estado, total y conflictos.
+ * Es la única fuente de verdad sobre compatibilidad y precio; el frontend y el asesor IA solo la consultan.
+ * @module
+ */
 import { catalog, categories, categoryNames, findPart, type Category, type Component } from './catalog.mjs';
 import { findProfile, profileIds, type ProfileId } from './profiles.mjs';
 
 // Políticas del proyecto (no son límites de fabricante).
+/** Margen sobre el consumo estimado para recomendar una fuente. */
 export const PSU_MARGIN = 1.25;
+/** Consumo estimado del resto del sistema (placa, RAM, discos, ventiladores), en vatios. */
 export const BASE_SYSTEM_WATTS = 75;
+/** Holgura mínima entre la GPU y el gabinete antes de advertir, en milímetros. */
 export const CLEARANCE_MM = 10;
 
+/** Categorías obligatorias: todas salvo la GPU. */
 export const requiredCategories = categories.filter(category => category !== 'gpu');
 
+/** Resultado de una regla. `pendiente` falta una pieza; `no_aplica` la regla no corresponde. */
 export type CheckStatus = 'ok' | 'advertencia' | 'bloqueo' | 'pendiente' | 'no_aplica';
+/** Resultado de evaluar una regla sobre una configuración. */
 export type Check = { id: string; name: string; status: CheckStatus; message: string; parts: Category[] };
+/** Configuración que envía el cliente: piezas elegidas, uso y presupuesto en soles. */
 export type ConfigurationInput = { componentIds: string[]; profileId: ProfileId | null; budget: number | null };
-type Parts = Partial<Record<Category, Component>>;
-type Rule = { id: string; name: string; parts: Category[]; evaluate: (parts: Parts, input: ConfigurationInput) => Omit<Check, 'id' | 'name' | 'parts'> };
+export type Parts = Partial<Record<Category, Component>>;
+/** Una regla del motor: qué piezas mira y cómo evalúa. */
+export type Rule = { id: string; name: string; parts: Category[]; evaluate: (parts: Parts, input: ConfigurationInput) => Omit<Check, 'id' | 'name' | 'parts'> };
 
 const ok = (message: string) => ({ status: 'ok' as const, message });
 const warn = (message: string) => ({ status: 'advertencia' as const, message });
@@ -25,6 +38,7 @@ function power(parts: Parts) {
   return { estimated, recommended };
 }
 
+/** Las 8 reglas en el orden en que se muestran: socket, memoria, formato, espacio GPU, cooler, video, potencia y uso. */
 export const rules: Rule[] = [
   { id: 'socket', name: 'Socket del procesador', parts: ['cpu', 'motherboard'], evaluate: ({ cpu, motherboard }) => {
     const a = cpu!.specs.socket, b = motherboard!.specs.socket;
@@ -85,6 +99,12 @@ function evaluate(parts: Parts, input: ConfigurationInput): Check[] {
   });
 }
 
+/**
+ * Valida una configuración completa o parcial.
+ * @param input - Configuración ya revisada por {@link parseConfiguration}.
+ * @returns Estado global (`incompleta`, `no_valida` o `valida`), resultado de cada regla, total, presupuesto,
+ *   si es recomendada y, por cada producto del catálogo, los bloqueos que causaría al elegirlo.
+ */
 export function validateConfiguration(input: ConfigurationInput) {
   const selected = input.componentIds.map(id => findPart(id)!);
   const parts: Parts = Object.fromEntries(selected.map(part => [part.category, part]));
@@ -101,6 +121,7 @@ export function validateConfiguration(input: ConfigurationInput) {
     conflicts: conflicts(parts, input),
   };
 }
+/** Resultado de {@link validateConfiguration}. */
 export type Validation = ReturnType<typeof validateConfiguration>;
 
 // Para cada producto del catálogo, los bloqueos que aparecerían al ponerlo en la selección actual.
@@ -114,9 +135,14 @@ function conflicts(parts: Parts, input: ConfigurationInput): Record<string, stri
   }));
 }
 
+/** Entrada inválida del cliente o de la IA; la API la responde con HTTP 400. */
 export class InputError extends Error {}
 
-// Misma validación de entrada para la API HTTP y para los argumentos de la IA.
+/**
+ * Revisa una entrada no confiable y la convierte en {@link ConfigurationInput}.
+ * Se usa igual para el cuerpo de las peticiones HTTP y para los argumentos que envía la IA.
+ * @throws {@link InputError} si hay productos fuera del catálogo, repetidos por categoría, un uso desconocido o un presupuesto inválido.
+ */
 export function parseConfiguration(value: unknown): ConfigurationInput {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new InputError('Envía un objeto de configuración.');
   const input = value as Record<string, unknown>;
