@@ -7,7 +7,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 ## Preferencias del usuario
 
 - Responder en **español**.
-- Commits: mensaje **en minúscula**, en inglés, corto y **sin firma de Claude** (sin `Co-Authored-By`). Hacer commit y push solo cuando el usuario lo pida.
+- Commits: mensaje **en minúscula**, en inglés, corto y **sin firma de Claude** (sin `Co-Authored-By`). Hacer commit y push solo cuando el usuario lo pida. Se trabaja y se hace push **directamente en `master`** (el usuario trabaja solo en el repo); no crear ramas ni PR.
 - Prioridad: algo **funcional y demostrable**, no precisión de producto comercial. Evitar sobreingeniería y documentación excesiva.
 - Mantener este archivo al día al terminar una tarea importante (estado, decisiones, pendientes).
 - Explicaciones para presentar (guiones, sustentación): equilibrar técnica y claridad. Por cada pieza, primero el **nombre técnico** (p. ej. "SPA", "API REST", "capa de dominio"), luego una explicación estándar de desarrollo de software que se entienda, y al final el **paralelo abstracto** (p. ej. "es la cocina", "aquí definimos las reglas del negocio"). Ni puro tecnicismo ni solo analogías.
