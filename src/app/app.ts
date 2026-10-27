@@ -25,7 +25,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
     <footer class="site-footer">
       <div class="container site-footer__inner">
         <p><strong>KAMAY</strong> · Proyecto integrador. Prototipo académico.</p>
-        <p>Precios referenciales en soles. El pago, el ensamblaje y la entrega son simulados.</p>
+        <p>Precios referenciales en soles, IGV incluido. El pago, el ensamblaje y la entrega son simulados.</p>
         <p><a routerLink="/pedidos">Gestión de pedidos (demo)</a></p>
       </div>
     </footer>

@@ -41,7 +41,7 @@ import { ChecksList } from '../shared/checks-list';
               }
             </tbody>
             <tfoot>
-              <tr><th scope="row" colspan="2">Total</th><td class="num total">{{ v.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</td></tr>
+              <tr><th scope="row" colspan="2">Total <span class="small muted">(IGV incluido)</span></th><td class="num total">{{ v.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</td></tr>
             </tfoot>
           </table>
           <details>

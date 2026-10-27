@@ -31,6 +31,17 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - Una versión anterior de la presentación prometía más de lo que hace el MVP: base de datos MySQL de 19 tablas, 7 herramientas, usuarios, postventa y evaluación con 30–50 escenarios. Distinguir siempre lo **diseñado** de lo **implementado**.
 - Por verificar: costo real por mensaje (panel de uso de OpenAI) y si el repo de GitHub se hace público.
 
+## Informe APF3 (en curso)
+
+- Consigna: Avance de Proyecto Final 3, semana 12, de un curso que pide Java (MVC, TDD, DAO, SOLID, Guava/POI/Commons/Logback). Acordado con el usuario: no aplica Java ni librerías Java, y no se fuerza ninguna arquitectura; se documenta lo que existe.
+- Enfoque: "construcción hacia atrás" de la planificación a partir del repo. El informe anterior (MySQL de 19 tablas, 7 herramientas, Claude API, 46 RF/25 RNF) prometía más; se reescribe para que coincida con el código, sin columnas de estado ni "prioridad MVP": lo que sobra se borra.
+- Se sigue la numeración del informe original (8 Inicio, 9 Planificación, 9.4 Datos…), sección por sección, en formato "lo que teníamos → lo que hay → lo que sugiero". Las secciones sin cambios se copian del Word.
+- Requerimientos: 26 RF y 18 RNF reescritos sobre el producto, más RF-27 a 33 que el usuario quiere recuperar (cuentas y roles cliente/administrador, perfil con RUC, comparador de hasta 3 componentes, CRUD de catálogo). Siguen abiertas cuatro decisiones: compra como invitado, boleta/factura para el RUC, recuperación de contraseña y rol técnico.
+- La evaluación del asesor (OE5) se mantiene como RNF con metas; falta definir los casos y la rúbrica, y ejecutarla.
+- Base de datos sugerida: SQLite (`node:sqlite`) con 11 tablas (8 de catálogo y 3 de pedidos); las cuentas suman usuarios.
+- Mediciones del RNF-01 (build de producción con gzip): validación en la API con p95 de 6 ms; cambio de pieza hasta ver el resultado, ~70 ms; páginas en ~0,3 s sin limitar la red y ~2,3 s con 4G lento + CPU 4x.
+- TSDoc en `backend/` y `src/app/core/`; `npm run docs` genera la documentación con TypeDoc en `dist/docs`.
+
 ## Decisiones tomadas (no revertir sin consultar)
 
 - **Motor simple de 8 reglas** en [backend/compatibility.mts](backend/compatibility.mts): socket, memoria, formato, espacio GPU, cooler, video, potencia y uso. Estados de regla: `ok`, `advertencia`, `bloqueo`, `pendiente`, `no_aplica`. Estado global: `incompleta`, `no_valida` o `valida`. La GPU es opcional.

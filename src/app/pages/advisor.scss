@@ -21,3 +21,5 @@
 .side__list { margin: 0; padding-left: 18px; color: var(--muted); }
 .side .link-btn { justify-self: start; }
 @media (max-width: 600px) { .msg { max-width: 100%; } }
+
+.notice__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }

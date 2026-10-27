@@ -1,6 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import type { Proposal } from '../core/api';
 import { AdvisorStore } from '../core/advisor-store';
 import { CatalogStore } from '../core/catalog-store';
@@ -9,7 +9,7 @@ import { configurationLabels } from '../shared/labels';
 
 @Component({
   selector: 'app-advisor',
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, RouterLink],
   templateUrl: './advisor.html',
   styleUrl: './advisor.scss',
 })

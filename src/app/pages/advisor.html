@@ -40,7 +40,11 @@
     @if (advisor.error(); as error) {
       <div class="notice notice--error" role="alert">
         <p>{{ error }} Tu conversación se ha guardado.</p>
-        <button type="button" class="btn btn--small" (click)="advisor.retry()">Reintentar</button>
+        <p>Mientras tanto, puedes armar tu equipo en el configurador: valida la compatibilidad con las mismas reglas.</p>
+        <div class="notice__actions">
+          <button type="button" class="btn btn--small" (click)="advisor.retry()">Reintentar</button>
+          <a routerLink="/configurador" class="btn btn--small">Ir al configurador</a>
+        </div>
       </div>
     }
 

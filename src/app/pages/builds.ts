@@ -46,7 +46,7 @@ const categoryOrder: Category[] = ['cpu', 'gpu', 'ram', 'storage', 'motherboard'
               <div class="build__foot">
                 <div>
                   <span class="price">{{ build.validation.total | currency: 'PEN' : 'symbol-narrow' : '1.0-0' }}</span>
-                  <span class="small muted"> · Precio referencial</span>
+                  <span class="small muted"> · Precio referencial, IGV incluido</span>
                 </div>
                 <p class="status status--{{ build.validation.status }}">{{ statusLabels[build.validation.status] }} · {{ build.validation.parts.length }} piezas</p>
               </div>
