@@ -3,25 +3,30 @@
  * @module
  */
 import express from 'express';
+import type { DatabaseSync } from 'node:sqlite';
 import { pathToFileURL } from 'node:url';
-import { catalog, categories, categoryNames } from './catalog.mjs';
+import { categories, categoryNames } from './catalog.mjs';
+import { catalog, CatalogRepository, useCatalog } from './catalog-repository.mjs';
+import { openDatabase } from './db.mjs';
 import { InputError, parseConfiguration, validateConfiguration } from './compatibility.mjs';
 import { advise, AdvisorError, type Message } from './advisor.mjs';
-import { profiles } from './profiles.mjs';
 import { listBuilds } from './builds.mjs';
-import { NotFoundError, OrderStore } from './orders.mjs';
+import { NotFoundError, OrderRepository } from './orders.mjs';
 
 /**
  * Crea la aplicación Express con todas las rutas `/api` y el manejo de errores.
- * @param orders - Almacén de pedidos; los tests pasan uno con un archivo temporal.
+ * @param db - Base de datos; por defecto `data/kamay.db` (o `DB_FILE`). Los tests pasan una base en memoria.
  */
-export function createApp(orders = new OrderStore(process.env['ORDERS_FILE'] ?? 'data/orders.json')) {
+export function createApp(db: DatabaseSync = openDatabase(process.env['DB_FILE'] ?? 'data/kamay.db')) {
+  useCatalog(new CatalogRepository(db));
+  const orders = new OrderRepository(db);
   const app = express();
   app.disable('x-powered-by');
   app.use(express.json({ limit: '32kb' }));
 
   app.get('/api/catalog', (_req, res) => {
-    res.json({ currency: 'PEN', categories: categories.map(id => ({ id, name: categoryNames[id] })), profiles, components: catalog });
+    res.json({ currency: 'PEN', categories: categories.map(id => ({ id, name: categoryNames[id] })),
+      profiles: catalog().profiles(), components: catalog().components() });
   });
   app.get('/api/builds', (req, res) => {
     const budget = req.query['budget'];

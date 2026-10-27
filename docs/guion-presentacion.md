@@ -45,7 +45,7 @@ Cada pieza sigue el mismo orden: **nombre técnico → qué es → paralelo**. E
 ### 4 · Lo que consulta el asesor: catálogo y motor de reglas (1:10)
 
 > El modelo tiene **solo tres herramientas**, que son las mismas funciones que usa la web:
-> - **`search_catalog`**: los 33 productos reales, con precio y especificaciones.
+> - **`search_catalog`**: los 34 productos reales, con precio y especificaciones.
 > - **`get_builds`**: los 4 equipos base, uno por perfil (diseño, render por CPU, render por GPU y gaming).
 > - **`validate_configuration`**: el motor de compatibilidad. El modelo está obligado a usarlo antes de proponer.
 >
@@ -81,7 +81,7 @@ Cada pieza sigue el mismo orden: **nombre técnico → qué es → paralelo**. E
 
 - **¿Y si el cliente intenta manipular a la IA?** El modelo trata los mensajes como datos, no como órdenes. Y aunque lo lograra, no puede saltarse el validador: los precios y la compatibilidad salen del servidor.
 - **¿Qué librerías usaron?** Angular 22 (signals, `httpResource` y Signal Forms de serie), Express 5, TypeScript en ambos lados, `node:test` para las pruebas, y la Responses API de OpenAI con `fetch`, sin SDK.
-- **¿Por qué no hay base de datos?** Es un MVP: solo incluye lo necesario para validar la idea. La persistencia está aislada en `OrderStore`, así que conectarla es un cambio localizado.
+- **¿Qué base de datos usan?** SQLite con `node:sqlite`, incluido en Node: no hay servidor que instalar y la base es un archivo. Cada parte del modelo tiene su repositorio (`CatalogRepository`, `OrderRepository`), que es la única clase que escribe SQL.
 - **¿Cuánto cuesta?** Unos centavos de dólar por mensaje con gpt-5-mini. Confirmarlo en el panel de uso de OpenAI antes de dar una cifra.
 
 ## Antes de presentar

@@ -2,14 +2,15 @@
  * Equipos base curados: un punto de partida por cada perfil de uso.
  * @module
  */
+import { catalog } from './catalog-repository.mjs';
 import { validateConfiguration } from './compatibility.mjs';
 import type { ProfileId } from './profiles.mjs';
 
 /** Equipo base: nombre comercial, perfil y piezas. */
 export type Build = { id: string; name: string; tagline: string; profileId: ProfileId; componentIds: string[] };
 
-// Bases curadas: un punto de partida por uso, nunca una promesa de rendimiento.
-export const builds: Build[] = [
+/** Equipos iniciales: se insertan en la base de datos cuando está vacía. Son un punto de partida, nunca una promesa de rendimiento. */
+export const initialBuilds: Build[] = [
   { id: 'kamay-diseno', name: 'Kamay Estudio', tagline: 'Photoshop fluido con archivos grandes.', profileId: 'diseno',
     componentIds: ['ryzen7-9700x', 'msi-b650-gaming-plus', 'corsair-ddr5-32', 'rtx5060-asus-dual', 'wd-sn850x-1tb', 'corsair-cx650', 'corsair-4000d', 'deepcool-ak400'] },
   { id: 'kamay-render-cpu', name: 'Kamay Render CPU', tagline: '16 núcleos para Blender Cycles por CPU.', profileId: 'render_cpu',
@@ -26,7 +27,7 @@ export const builds: Build[] = [
  * @param budget - Presupuesto en soles para calcular si cada equipo entra en él.
  */
 export function listBuilds(profileId: ProfileId | null = null, budget: number | null = null) {
-  return builds
+  return catalog().builds()
     .filter(build => !profileId || build.profileId === profileId)
     .map(({ componentIds, ...build }) => {
       const { conflicts: _, ...validation } = validateConfiguration({ componentIds, profileId: build.profileId, budget });

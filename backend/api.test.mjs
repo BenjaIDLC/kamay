@@ -4,17 +4,46 @@ import { once } from 'node:events';
 import { mkdtempSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { catalog } from '../dist/api/catalog.mjs';
+import { initialComponents } from '../dist/api/catalog.mjs';
+import { initialProfiles } from '../dist/api/profiles.mjs';
+import { initialBuilds } from '../dist/api/builds.mjs';
+import { CatalogRepository, useCatalog } from '../dist/api/catalog-repository.mjs';
+import { openDatabase } from '../dist/api/db.mjs';
 import { rules, validateConfiguration } from '../dist/api/compatibility.mjs';
-import { builds } from '../dist/api/builds.mjs';
 import { createApp } from '../dist/api/server.mjs';
 import { advise } from '../dist/api/advisor.mjs';
-import { OrderStore } from '../dist/api/orders.mjs';
+
+const repository = new CatalogRepository(openDatabase(':memory:'));
+useCatalog(repository);
+const catalog = repository.components();
+const builds = repository.builds();
 
 const gaming = builds.find(build => build.id === 'kamay-gaming').componentIds;
 const swap = (ids, from, to) => ids.map(id => id === from ? to : id);
 const check = (result, id) => result.checks.find(check => check.id === id);
 const validate = (componentIds, profileId = null, budget = null) => validateConfiguration({ componentIds, profileId, budget });
+
+test('the database returns the initial catalog, profiles and builds unchanged', () => {
+  assert.deepEqual(catalog, initialComponents);
+  assert.deepEqual(repository.profiles(), initialProfiles);
+  assert.deepEqual(builds, initialBuilds);
+});
+
+test('a deactivated component leaves the catalog and hides the builds that use it', () => {
+  const db = openDatabase(':memory:');
+  const local = new CatalogRepository(db);
+  db.prepare("UPDATE componente SET activo = 0 WHERE id = 'rtx5070-msi-ventus'").run();
+  local.reload();
+  assert.equal(local.find('rtx5070-msi-ventus'), undefined);
+  assert.equal(local.components().length, catalog.length - 1);
+  assert.deepEqual(local.builds().map(build => build.id), ['kamay-diseno', 'kamay-render-cpu', 'kamay-render-gpu']);
+});
+
+test('the database rejects an invoice without RUC', () => {
+  const db = openDatabase(':memory:');
+  assert.throws(() => db.prepare(`INSERT INTO pedido (id, nombre_cliente, correo_cliente, tipo_comprobante, total, etapa, creado_en)
+    VALUES ('X', 'Ana', 'ana@example.com', 'factura', 100, 'pagado', '2026-01-01')`).run(), /CHECK constraint/);
+});
 
 test('every base build is valid and recommended for its use', () => {
   for (const build of builds) {
@@ -91,9 +120,8 @@ test('conflicts list blocking reasons per catalog product', () => {
   assert.equal(result.conflicts['coolermaster-q300l'].length, 1);
 });
 
-async function withServer(fn) {
-  const orders = new OrderStore(join(mkdtempSync(join(tmpdir(), 'kamay-')), 'orders.json'));
-  const server = createApp(orders).listen(0, '127.0.0.1');
+async function withServer(fn, db = openDatabase(':memory:')) {
+  const server = createApp(db).listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}/api`;
   const post = (path, body) => fetch(base + path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
@@ -134,6 +162,19 @@ test('HTTP: orders revalidate, persist and advance through stages', () => withSe
   assert.equal((await (await fetch(`${base}/orders`)).json()).orders.length, 1);
   assert.equal((await fetch(`${base}/orders/NOPE`)).status, 404);
 }));
+
+test('HTTP: orders survive reopening the database file', async () => {
+  const file = join(mkdtempSync(join(tmpdir(), 'kamay-')), 'kamay.db');
+  let id;
+  await withServer(async (_base, post) => {
+    id = (await (await post('/orders', { componentIds: gaming, customer: { name: 'Ana', email: 'ana@example.com' } })).json()).id;
+  }, openDatabase(file));
+  await withServer(async base => {
+    const order = await (await fetch(`${base}/orders/${id}`)).json();
+    assert.equal(order.items.length, 8);
+    assert.equal(order.total, validate(gaming).total);
+  }, openDatabase(file));
+});
 
 test('advisor runs tools against the real catalog and returns the validated proposal', async () => {
   process.env.OPENAI_API_KEY = 'test';

@@ -17,7 +17,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 ## Estado actual
 
 - Funciona de punta a punta: Inicio (hero rotativo) → Equipos → Componentes → Configurador → Checkout con pago simulado → Seguimiento del pedido. Además, Asesor IA y gestión de pedidos (`/pedidos`).
-- `npm run api:test` cubre motor, API, pedidos y asesor con un proveedor simulado (14 tests).
+- `npm run api:test` cubre motor, base de datos, API, pedidos y asesor con un proveedor simulado (18 tests).
 - OpenAI con créditos cargados: `npm run api:test:live` pasa (conversación de 3 turnos, unos centavos por corrida). Con `ADVISOR_DEBUG=1` se registran las llamadas a herramientas.
 - Asesor: `search_catalog` no filtra por uso (devuelve `suggestedFor`), y el cliente reenvía la última propuesta (`proposal` en `/api/advice`) para que el modelo conozca sus IDs; sin eso, el modelo gastaba las 8 rondas buscando piezas.
 - Página Equipos rediseñada: 2 tarjetas por fila, tabla con las 8 piezas en orden fijo ("Gráficos integrados" si no hay GPU) y botones a todo el ancho.
@@ -36,9 +36,9 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - Consigna: Avance de Proyecto Final 3, semana 12, de un curso que pide Java (MVC, TDD, DAO, SOLID, Guava/POI/Commons/Logback). Acordado con el usuario: no aplica Java ni librerías Java, y no se fuerza ninguna arquitectura; se documenta lo que existe.
 - Enfoque: "construcción hacia atrás" de la planificación a partir del repo. El informe anterior (MySQL de 19 tablas, 7 herramientas, Claude API, 46 RF/25 RNF) prometía más; se reescribe para que coincida con el código, sin columnas de estado ni "prioridad MVP": lo que sobra se borra.
 - Se sigue la numeración del informe original (8 Inicio, 9 Planificación, 9.4 Datos…), sección por sección, en formato "lo que teníamos → lo que hay → lo que sugiero". Las secciones sin cambios se copian del Word.
-- Requerimientos: 26 RF y 18 RNF reescritos sobre el producto, más RF-27 a 33 que el usuario quiere recuperar (cuentas y roles cliente/administrador, perfil con RUC, comparador de hasta 3 componentes, CRUD de catálogo). Siguen abiertas cuatro decisiones: compra como invitado, boleta/factura para el RUC, recuperación de contraseña y rol técnico.
+- Requerimientos: 26 RF y 18 RNF reescritos sobre el producto, más RF-27 a 33 que el usuario quiere recuperar (cuentas y roles cliente/administrador, perfil con RUC, comparador de hasta 3 componentes, CRUD de catálogo). Decidido: compra como invitado, boleta o factura (con RUC), sin recuperación de contraseña, y solo los roles cliente y administrador.
 - La evaluación del asesor (OE5) se mantiene como RNF con metas; falta definir los casos y la rúbrica, y ejecutarla.
-- Base de datos sugerida: SQLite (`node:sqlite`) con 11 tablas (8 de catálogo y 3 de pedidos); las cuentas suman usuarios.
+- Base de datos: SQLite en lugar de MongoDB (sin servidor, funciona sin internet y es coherente con el diseño relacional evaluado antes). Fase A implementada: 13 tablas, specs como columnas, y los pedidos de prueba de `orders.json` se descartaron. Puntos 1–9 y 11 del informe aprobados.
 - Mediciones del RNF-01 (build de producción con gzip): validación en la API con p95 de 6 ms; cambio de pieza hasta ver el resultado, ~70 ms; páginas en ~0,3 s sin limitar la red y ~2,3 s con 4G lento + CPU 4x.
 - TSDoc en `backend/` y `src/app/core/`; `npm run docs` genera la documentación con TypeDoc en `dist/docs`.
 
@@ -46,10 +46,12 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 
 - **Motor simple de 8 reglas** en [backend/compatibility.mts](backend/compatibility.mts): socket, memoria, formato, espacio GPU, cooler, video, potencia y uso. Estados de regla: `ok`, `advertencia`, `bloqueo`, `pendiente`, `no_aplica`. Estado global: `incompleta`, `no_valida` o `valida`. La GPU es opcional.
   - El motor anterior de 15 reglas, con catálogo sintético y docs extensos, está archivado en la rama `archivo/motor-15-reglas`. Se abandonó por exceso de complejidad; no recuperarlo.
-- **Catálogo con productos reales** (Ryzen 9000, Core Ultra, RTX 50…) en [backend/catalog.mts](backend/catalog.mts): 33 productos y precios referenciales en PEN. Agregar un producto = añadir una fila.
+- **Catálogo con productos reales** (Ryzen 9000, Core Ultra, RTX 50…) en [backend/catalog.mts](backend/catalog.mts): 34 productos y precios referenciales en PEN. Son los datos iniciales de la base de datos.
 - 4 perfiles de uso (diseño, render CPU, render GPU, gaming) y 4 equipos base en `backend/profiles.mts` y `backend/builds.mts`.
 - El cliente nunca decide precio ni compatibilidad: el servidor valida en cada cambio y revalida al crear el pedido.
-- Pedidos en `data/orders.json` (ignorado por git), sin base de datos.
+- **Base de datos SQLite** (`node:sqlite`, requiere Node ≥ 22.13) en `data/kamay.db` (ignorado por git), con el esquema en [backend/schema.sql](backend/schema.sql): 13 tablas, ya incluidas las de usuarios, sesiones y comprobante. Al arrancar se aplica el esquema y, si la base está vacía, se cargan los datos iniciales de `catalog.mts`, `profiles.mts` y `builds.mts`.
+  - Patrón repositorio: `CatalogRepository` mantiene el catálogo en memoria (hay que llamar a `reload()` después de modificarlo) y `useCatalog()`/`catalog()` lo exponen al motor. `OrderRepository` guarda cada pedido en una transacción. Los tests usan `:memory:`.
+  - Los componentes se desactivan (`activo = 0`), nunca se borran; un equipo base con una pieza inactiva se oculta. Los pedidos copian nombre y precio al comprar.
 - **Frontend:** Angular 22 como SPA, sin SSR. Usa signals, `httpResource`, `@Service()` y Signal Forms en el checkout. Proxy `/api` → `127.0.0.1:3000`. El estado del configurador vive en `ConfiguratorStore` (persistido en localStorage) y la conversación en `AdvisorStore`.
 - **Estilo visual inspirado en el layout de nzxt.com:** hero redondeado rotativo con 3 diapositivas (asesor, compatibilidad, equipos), acento violeta `#7c3aed`, Montserrat, botones píldora, tarjetas grises redondeadas y cabecera negra.
   - Copy, colores e ilustraciones son propios; nunca usar assets ni textos de NZXT.
@@ -61,7 +63,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 1. Seguir afinando el asesor con conversaciones reales (respuestas aún algo largas).
 2. Evaluación del asesor (OE5): casos de prueba (datos completos, datos faltantes, presupuesto insuficiente, cambio incompatible, fuera de alcance) y una rúbrica.
 3. Fotografía real de producto para el hero y las tarjetas.
-4. Base de datos (aplazada por ser un MVP; así se justifica en la presentación). Opción prevista: SQLite con `node:sqlite`, cambiando solo `OrderStore`; el catálogo podría pasar después a una tabla.
+4. Fases B (cuentas y roles: compra como invitado, boleta/factura con RUC, sin recuperación de contraseña; roles cliente y administrador), C (panel de administración del catálogo) y D (comparador). La fase A (base de datos) ya está hecha.
 
 ## Verificación visual
 

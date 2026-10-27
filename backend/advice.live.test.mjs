@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import { once } from 'node:events';
 import { test } from 'node:test';
 import { createApp } from '../dist/api/server.mjs';
+import { openDatabase } from '../dist/api/db.mjs';
 import { validateConfiguration } from '../dist/api/compatibility.mjs';
 
 // Run explicitly: this test contacts OpenAI and consumes API credit.
 test('live advisor asks for missing data, proposes a validated build and rejects an incompatible change', { timeout: 300_000 }, async () => {
   assert.ok(process.env.OPENAI_API_KEY?.trim(), 'OPENAI_API_KEY is required in .env');
-  const server = createApp().listen(0, '127.0.0.1');
+  const server = createApp(openDatabase(':memory:')).listen(0, '127.0.0.1');
   await once(server, 'listening');
   const messages = [];
   let proposal = null; // Sent back like the frontend does, so the model knows the ids it proposed.

@@ -4,9 +4,10 @@
  * y toda propuesta pasa por el motor de compatibilidad.
  * @module
  */
-import { catalog, categories } from './catalog.mjs';
+import { categories } from './catalog.mjs';
+import { catalog } from './catalog-repository.mjs';
 import { InputError, parseConfiguration, validateConfiguration, type ConfigurationInput } from './compatibility.mjs';
-import { profileIds, profiles } from './profiles.mjs';
+import { profileIds } from './profiles.mjs';
 import { listBuilds } from './builds.mjs';
 
 /** Un mensaje del chat. */
@@ -67,13 +68,13 @@ function runTool(name: string | undefined, rawArgs: string | undefined): { outpu
   try {
     if (name === 'search_catalog') {
       // Never filter by use: a product the customer names must always be findable, even if it is not suggested for their use.
-      return { output: catalog
+      return { output: catalog().components()
         .filter(part => !args['category'] || part.category === args['category'])
         .map(({ id, category, brand, name, price, uses, specs, rationale }) => ({ id, category, name: `${brand} ${name}`, price, suggestedFor: uses, specs, rationale })) };
     }
     if (name === 'get_builds') {
       const { profileId, budget } = parseConfiguration({ profileId: args['profileId'], budget: args['budget'] });
-      return { output: { profiles, builds: listBuilds(profileId, budget).map(({ validation: { parts, checks, ...summary }, ...build }) => ({ ...build, ...summary })) } };
+      return { output: { profiles: catalog().profiles(), builds: listBuilds(profileId, budget).map(({ validation: { parts, checks, ...summary }, ...build }) => ({ ...build, ...summary })) } };
     }
     if (name === 'validate_configuration') {
       const { conflicts: _, parts, ...validation } = validateConfiguration(parseConfiguration(args));

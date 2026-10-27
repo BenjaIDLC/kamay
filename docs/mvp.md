@@ -8,7 +8,7 @@ Kamay vende computadoras armadas a medida para diseño gráfico, render 3D y gam
 
 | Objetivo | Qué hay en el MVP |
 | --- | --- |
-| **OE1 Catálogo** | 33 productos reales en 8 categorías, cada uno con justificación técnica, especificaciones clave y usos recomendados. Vista **Componentes** con filtros por categoría y uso. |
+| **OE1 Catálogo** | 34 productos reales en 8 categorías, cada uno con justificación técnica, especificaciones clave y usos recomendados. Vista **Componentes** con filtros por categoría y uso. |
 | **OE2 Configurador** | 4 equipos base (uno por uso). Se puede elegir uso y presupuesto, partir de una base o de cero, y cambiar piezas. Cada cambio se valida en el servidor; las opciones compatibles aparecen primero y las demás explican su conflicto. |
 | **OE3 Pedidos** | Checkout con pago simulado. El servidor revalida y solo acepta configuraciones compatibles. El pedido se guarda y sus etapas se avanzan manualmente (pagado → ensamblaje → control de calidad → enviado → entregado). |
 | **OE4 Experiencia** | Inicio, Equipos, Componentes, Armar y Asesor IA, en español, adaptable a móvil y con estados de carga, error y simulación siempre explícitos. |

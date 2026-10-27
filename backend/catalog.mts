@@ -1,8 +1,10 @@
 /**
- * Catálogo de productos de Kamay: categorías, especificaciones y los 33 productos reales con precio referencial en soles.
+ * Categorías, tipos del catálogo y los 34 productos reales con los que se carga la base de datos la primera vez.
+ * En ejecución el catálogo se lee de la base mediante {@link CatalogRepository}.
  * @module
  */
 import type { ProfileId } from './profiles.mjs';
+import type { CatalogRepository } from './catalog-repository.mjs';
 
 /** Las 8 categorías de pieza, en el orden en que se muestran. */
 export const categories = ['cpu', 'motherboard', 'ram', 'gpu', 'storage', 'psu', 'case', 'cooler'] as const;
@@ -54,8 +56,8 @@ export type Component = {
 const all: ProfileId[] = ['diseno', 'render_cpu', 'render_gpu', 'gaming'];
 
 // Especificaciones tomadas de fichas públicas de los fabricantes; los precios son referenciales en PEN, no ofertas de venta.
-/** Productos a la venta. Agregar un producto es añadir una fila. */
-export const catalog: Component[] = [
+/** Productos iniciales: se insertan en la base de datos cuando está vacía. */
+export const initialComponents: Component[] = [
   // Procesadores
   { id: 'ryzen5-9600x', category: 'cpu', brand: 'AMD', name: 'Ryzen 5 9600X', price: 950, uses: ['diseno', 'gaming'],
     rationale: '6 núcleos Zen 5 con alta frecuencia: buen rendimiento por núcleo para Photoshop y juegos a un precio contenido.',
@@ -174,6 +176,3 @@ export const catalog: Component[] = [
     rationale: 'Disipador de aire de gama alta para CPUs de 16 núcleos en carga sostenida. Mide 168 mm de alto.',
     specs: { sockets: ['AM5', 'LGA1700', 'LGA1851'], heightMm: 168 } },
 ];
-
-/** Busca un producto por su identificador; `undefined` si no existe. */
-export const findPart = (id: string) => catalog.find(part => part.id === id);

@@ -3,8 +3,9 @@
  * Es la única fuente de verdad sobre compatibilidad y precio; el frontend y el asesor IA solo la consultan.
  * @module
  */
-import { catalog, categories, categoryNames, findPart, type Category, type Component } from './catalog.mjs';
-import { findProfile, profileIds, type ProfileId } from './profiles.mjs';
+import { categories, categoryNames, type Category, type Component } from './catalog.mjs';
+import { catalog } from './catalog-repository.mjs';
+import { profileIds, type ProfileId } from './profiles.mjs';
 
 // Políticas del proyecto (no son límites de fabricante).
 /** Margen sobre el consumo estimado para recomendar una fuente. */
@@ -79,7 +80,7 @@ export const rules: Rule[] = [
     return ok(`Consumo estimado ${estimated} W; la fuente de ${watts} W cubre el recomendado de ${recommended} W.`);
   } },
   { id: 'perfil', name: 'Adecuación al uso', parts: ['cpu', 'ram', 'gpu', 'storage'], evaluate: (parts, input) => {
-    const profile = findProfile(input.profileId);
+    const profile = catalog().profile(input.profileId);
     if (!profile) return { status: 'no_aplica', message: 'Elige un uso para recibir orientación.' };
     const issues: string[] = [];
     if (profile.minCores && parts.cpu!.specs.cores! < profile.minCores) issues.push(`se recomiendan al menos ${profile.minCores} núcleos (tiene ${parts.cpu!.specs.cores})`);
@@ -106,7 +107,7 @@ function evaluate(parts: Parts, input: ConfigurationInput): Check[] {
  *   si es recomendada y, por cada producto del catálogo, los bloqueos que causaría al elegirlo.
  */
 export function validateConfiguration(input: ConfigurationInput) {
-  const selected = input.componentIds.map(id => findPart(id)!);
+  const selected = input.componentIds.map(id => catalog().find(id)!);
   const parts: Parts = Object.fromEntries(selected.map(part => [part.category, part]));
   const checks = evaluate(parts, input);
   const missing = requiredCategories.filter(category => !parts[category]);
@@ -126,7 +127,7 @@ export type Validation = ReturnType<typeof validateConfiguration>;
 
 // Para cada producto del catálogo, los bloqueos que aparecerían al ponerlo en la selección actual.
 function conflicts(parts: Parts, input: ConfigurationInput): Record<string, string[]> {
-  return Object.fromEntries(catalog.map(candidate => {
+  return Object.fromEntries(catalog().components().map(candidate => {
     const swapped = { ...parts, [candidate.category]: candidate };
     const blocks = evaluate(swapped, input)
       .filter(check => check.status === 'bloqueo' && check.parts.includes(candidate.category))
@@ -150,7 +151,7 @@ export function parseConfiguration(value: unknown): ConfigurationInput {
   if (!Array.isArray(ids) || ids.length > categories.length || !ids.every(id => typeof id === 'string') || new Set(ids).size !== ids.length) {
     throw new InputError('componentIds debe ser una lista de hasta ocho identificadores distintos.');
   }
-  const parts = ids.map(id => findPart(id));
+  const parts = ids.map(id => catalog().find(id));
   const unknown = ids.filter((_, index) => !parts[index]);
   if (unknown.length) throw new InputError(`Productos fuera del catálogo: ${unknown.join(', ')}.`);
   if (new Set(parts.map(part => part!.category)).size !== parts.length) throw new InputError('Solo se admite un producto por categoría.');

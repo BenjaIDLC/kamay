@@ -20,8 +20,11 @@ export type Profile = {
   minVramGb: number | null;
 };
 
-// Umbrales de curaduría del proyecto, basados en requisitos publicados de Adobe, Blender y Epic Games.
-export const profiles: Profile[] = [
+/**
+ * Perfiles iniciales: se insertan en la base de datos cuando está vacía.
+ * Umbrales de curaduría del proyecto, basados en requisitos publicados de Adobe, Blender y Epic Games.
+ */
+export const initialProfiles: Profile[] = [
   { id: 'diseno', name: 'Diseño gráfico', software: 'Photoshop', description: 'Fotografía, composición y edición 2D.',
     minRamGb: 32, minStorageGb: 1000, minCores: 6, needsGpu: false, minVramGb: null },
   { id: 'render_cpu', name: 'Render 3D por CPU', software: 'Blender Cycles (CPU)', description: 'Render final usando todos los núcleos del procesador.',
@@ -32,5 +35,3 @@ export const profiles: Profile[] = [
     minRamGb: 16, minStorageGb: 1000, minCores: 6, needsGpu: true, minVramGb: 8 },
 ];
 
-/** Busca un perfil por su identificador; `null` si no existe o no se eligió. */
-export const findProfile = (id: string | null | undefined) => profiles.find(profile => profile.id === id) ?? null;
