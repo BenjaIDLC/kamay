@@ -41,6 +41,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - Base de datos: SQLite en lugar de MongoDB (sin servidor, funciona sin internet y es coherente con el diseño relacional evaluado antes). Fase A implementada: 13 tablas, specs como columnas, y los pedidos de prueba de `orders.json` se descartaron. Puntos 1–9 y 11 del informe aprobados.
 - Mediciones del RNF-01 (build de producción con gzip): validación en la API con p95 de 6 ms; cambio de pieza hasta ver el resultado, ~70 ms; páginas en ~0,3 s sin limitar la red y ~2,3 s con 4G lento + CPU 4x.
 - TSDoc en `backend/` y `src/app/core/`; `npm run docs` genera la documentación con TypeDoc en `dist/docs`.
+- Informe redactado en un documento de Claude (https://claude.ai/artifact/QSqBgctzST3ZG1PKfTEcKX) y exportado a `docs/informe/avance3-informe.docx` (Arial 12, interlineado 1,5, A4; se regenera exportando y aplicando el mismo formato). Tiene carátula, secciones 1 a 9.4 y el capítulo 10; las secciones sin cambios llevan una nota «[Se mantiene del Avance 2]» para pegarlas del Word anterior. RNF finales: 21 (RNF-10 contraseñas, RNF-11 roles, RNF-19 evaluación). Faltan 9.3 (prototipos y procesos), 9.5 (registro de cambios) y los anexos (matriz de trazabilidad).
 
 ## Decisiones tomadas (no revertir sin consultar)
 
