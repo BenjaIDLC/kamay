@@ -49,3 +49,6 @@ Thumbs.db
 
 # Demo order storage
 /data
+
+# Documentos Word (se entregan aparte; el contexto va en Markdown)
+*.docx
