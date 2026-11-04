@@ -9,6 +9,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - Responder en **español**.
 - Commits: mensaje **en minúscula**, en inglés, corto y **sin firma de Claude** (sin `Co-Authored-By`). Hacer commit y push solo cuando el usuario lo pida. Se trabaja y se hace push **directamente en `master`** (el usuario trabaja solo en el repo); no crear ramas ni PR.
 - Prioridad: algo **funcional y demostrable**, no precisión de producto comercial. Evitar sobreingeniería y documentación excesiva.
+- Los documentos Word **no se suben al repo** (`*.docx` está en `.gitignore`); el contexto necesario va en Markdown dentro de `docs/`.
 - Mantener este archivo al día al terminar una tarea importante (estado, decisiones, pendientes).
 - Explicaciones para presentar (guiones, sustentación): equilibrar técnica y claridad. Por cada pieza, primero el **nombre técnico** (p. ej. "SPA", "API REST", "capa de dominio"), luego una explicación estándar de desarrollo de software que se entienda, y al final el **paralelo abstracto** (p. ej. "es la cocina", "aquí definimos las reglas del negocio"). Ni puro tecnicismo ni solo analogías.
 - UI: prefiere layouts aireados (p. ej. tarjetas de 2 por fila, botones a todo el ancho del contenedor, tablas con bordes claros) y revisa con capturas.
@@ -44,7 +45,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 
 ## Informe de pruebas (semana 13)
 
-- [docs/informe/informe-pruebas.docx](docs/informe/informe-pruebas.docx): 12 casos con la plantilla del curso (2 por funcionalidad: flujo principal y negativo) sobre catálogo, configurador, checkout, seguimiento, asesor IA y rendimiento, con capturas. Sigue la estructura del informe de ejemplo: resumen, defectos, 4 métricas y conclusiones.
+- [docs/informe/informe-pruebas.md](docs/informe/informe-pruebas.md) (resumen; el Word con capturas se entrega aparte): 12 casos con la plantilla del curso (2 por funcionalidad: flujo principal y negativo) sobre catálogo, configurador, checkout, seguimiento, asesor IA y rendimiento, con capturas. Sigue la estructura del informe de ejemplo: resumen, defectos, 4 métricas y conclusiones.
 - Resultado: 10 Pass y 2 Bloqueados (CP-09 y CP-10, asesor). La clave de OpenAI del entorno en la nube daba 401. **Pendiente:** ejecutarlos en local con una clave válida y actualizar el informe.
 - DEF-01 (abierto, severidad media): con el perfil "Slow 4G" de Chrome (562 ms) las páginas tardan entre 3,3 y 4,3 s por la cadena de peticiones (HTML → JS → chunk de la ruta → API). Con el perfil de 150 ms tardan entre 1,6 y 1,9 s y cumplen el RNF-01.
 - Los casos se ejecutaron con Playwright; los scripts quedaron fuera del repo. El CP-02 desactiva un componente por SQL porque todavía no hay panel de administración.
