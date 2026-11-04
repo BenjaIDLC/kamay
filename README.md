@@ -22,7 +22,7 @@ npm run api:start           # API en http://127.0.0.1:3000
 npm start                   # App en http://localhost:4200 (redirige /api a la API)
 ```
 
-Sin `OPENAI_API_KEY` todo funciona salvo el chat, que muestra un error recuperable.
+Sin `OPENAI_API_KEY` todo funciona salvo el chat, que muestra un error recuperable. Las respuestas del asesor van firmadas; si reinicias la API sin `ADVISOR_SECRET`, empieza una conversación nueva.
 
 ## Pruebas
 

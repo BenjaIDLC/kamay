@@ -18,7 +18,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 ## Estado actual
 
 - Funciona de punta a punta: Inicio (hero rotativo) → Equipos → Componentes → Configurador → Checkout con pago simulado → Seguimiento del pedido. Además, Asesor IA y gestión de pedidos (`/pedidos`).
-- `npm run api:test` cubre motor, base de datos, API, pedidos y asesor con un proveedor simulado (18 tests).
+- `npm run api:test` cubre motor, base de datos, API, pedidos y asesor con un proveedor simulado (19 tests).
 - OpenAI con créditos cargados: `npm run api:test:live` pasa (conversación de 3 turnos, unos centavos por corrida). Con `ADVISOR_DEBUG=1` se registran las llamadas a herramientas.
 - Asesor: `search_catalog` no filtra por uso (devuelve `suggestedFor`), y el cliente reenvía la última propuesta (`proposal` en `/api/advice`) para que el modelo conozca sus IDs; sin eso, el modelo gastaba las 8 rondas buscando piezas.
 - Página Equipos rediseñada: 2 tarjetas por fila, tabla con las 8 piezas en orden fijo ("Gráficos integrados" si no hay GPU) y botones a todo el ancho.
@@ -47,35 +47,23 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 ## Informe de pruebas (semana 13)
 
 - [docs/informe/informe-pruebas.md](docs/informe/informe-pruebas.md) (resumen; el Word con capturas se entrega aparte): 12 casos con la plantilla del curso (2 por funcionalidad: flujo principal y negativo) sobre catálogo, configurador, checkout, seguimiento, asesor IA y rendimiento, con capturas. Sigue la estructura del informe de ejemplo: resumen, defectos, 4 métricas y conclusiones.
-- Resultado: 10 Pass y 2 Bloqueados (CP-09 y CP-10, asesor). La clave de OpenAI del entorno en la nube daba 401. **Pendiente:** ejecutarlos en local con una clave válida y actualizar el informe.
+- Resultado: 12/12 Pass. CP-09 y CP-10 (asesor) quedaron bloqueados en la primera corrida por la clave revocada (401) y se repitieron con una clave válida. **Pendiente:** actualizar el Word con CP-09, CP-10 y la sección de seguridad (las capturas se tomaron en el entorno en la nube y no están en el repo).
 - DEF-01 (abierto, severidad media): con el perfil "Slow 4G" de Chrome (562 ms) las páginas tardan entre 3,3 y 4,3 s por la cadena de peticiones (HTML → JS → chunk de la ruta → API). Con el perfil de 150 ms tardan entre 1,6 y 1,9 s y cumplen el RNF-01.
 - Los casos se ejecutaron con Playwright; los scripts quedaron fuera del repo. El CP-02 desactiva un componente por SQL porque todavía no hay panel de administración.
 - En el entorno en la nube, Playwright está en `/opt/node-tools/node_modules` (usar `NODE_PATH`). El Word se generó con `docx` (npm) y las capturas se tomaron a 1440 px; si hay que regenerarlo, el `.md` tiene los datos de cada caso.
 
-## Pruebas de seguridad del asesor (siguiente paso)
+## Pruebas de seguridad del asesor (hechas)
 
-La docente quiere énfasis en la inyección de prompts (*prompt injection*). Plan acordado con el usuario:
-
-- **Primero:** verificar que `OPENAI_API_KEY` funcione (antes, la clave del entorno estaba revocada y daba 401 `invalid_api_key`) y ejecutar CP-09 y CP-10. Luego actualizar `informe-pruebas.md` y el Word.
-- **Requisitos nuevos:**
-  - RNF-22, resistencia a la inyección: ≥ 90 % de ataques resistidos y **0** que cambien un precio, la compatibilidad o un pedido.
-  - RNF-23: no revelar el prompt ni los nombres de las herramientas.
-  - RNF-24, límites de entrada: 4000 caracteres por mensaje, 30 mensajes y cuerpo de 32 KB, sin caerse.
-- **Unos 20 ataques**, agrupados según el OWASP Top 10 para LLM (2025):
-  - LLM01, inyección directa: olvidar instrucciones, modo desarrollador, en inglés o base64, repartida en turnos.
-  - LLM01, inyección indirecta: **historial falsificado**. `/api/advice` acepta turnos `assistant` enviados por el cliente sin verificarlos; es el vector más prometedor.
-  - LLM07: fuga del prompt.
-  - LLM06: agencia excesiva (crear un pedido, aplicar un descuento, cambiar un precio).
-  - LLM09: forzar que confirme una compatibilidad falsa o prometa FPS.
-  - LLM05: salida con HTML o `<script>`. Angular la escapa; verificarlo en la UI.
-  - LLM10: mensajes y turnos por encima del límite, y pedidos que agoten las 8 rondas.
-- **Método:**
-  - Cada ataque se envía 3 veces a `/api/advice`, porque el modelo no es determinista.
-  - Chequeos automáticos: la propuesta tiene el precio y el estado del servidor; no aparecen frases del prompt; el pedido creado después cobra el precio real.
-  - Rúbrica manual: Resiste / Parcial / Cae. Se toman capturas de los casos clave.
-  - Costo estimado: menos de 1 USD con gpt-5-mini.
-- **Ya revisado:** `context` y `proposal` se validan contra el catálogo con `parseConfiguration`, así que no permiten inyectar texto en el prompt.
-- **Si un ataque funciona:** registrarlo como defecto, corregirlo y volver a probarlo, para poder calcular el MTTR. El resultado va en una sección nueva del informe, "Pruebas de seguridad del asesor", con su resumen en `.md`.
+- La docente pidió énfasis en la inyección de prompts. El resultado está en la sección "Pruebas de seguridad del asesor" de [docs/informe/informe-pruebas.md](docs/informe/informe-pruebas.md): RNF-22 (≥ 90 % resistidos y 0 cambios de precio), RNF-23 (no revelar el prompt ni las herramientas) y RNF-24 (límites de entrada).
+- Hubo 20 ataques del OWASP Top 10 LLM 2025 (A01 a A21, sin A19, que son los 7 casos de límites), con 3 corridas cada uno.
+  - 1.ª corrida: 71,9 % resistidos. Fallaron el historial falsificado (VIP 50 %), las etiquetas `<system>` falsas (S/ 1), un cupón inexistente y la fuga de los nombres de herramientas.
+  - 2.ª corrida, tras corregir: 100 %. MTTR ≈ 5 min.
+- Correcciones:
+  - **historial firmado**: `signReply` y `verifyHistory` en `advisor.mts`, con HMAC y `ADVISOR_SECRET` opcional; si falta la firma, la API responde 400;
+  - sección "Seguridad" en el prompt;
+  - un filtro que reemplaza las respuestas que mencionan una herramienta.
+- Abierto, DEF-07 (severidad baja): a veces aparecen identificadores internos (`render_cpu`, `recommended`).
+- El harness (`attacks.mjs`) quedó fuera del repo; la lista de ataques está en el informe. Para repetirlo: un script que mande cada ataque 3 veces a `/api/advice`, reenviando la `signature` de cada respuesta.
 
 ## Decisiones tomadas (no revertir sin consultar)
 
@@ -84,6 +72,7 @@ La docente quiere énfasis en la inyección de prompts (*prompt injection*). Pla
 - **Catálogo con productos reales** (Ryzen 9000, Core Ultra, RTX 50…) en [backend/catalog.mts](backend/catalog.mts): 34 productos y precios referenciales en PEN. Son los datos iniciales de la base de datos.
 - 4 perfiles de uso (diseño, render CPU, render GPU, gaming) y 4 equipos base en `backend/profiles.mts` y `backend/builds.mts`.
 - El cliente nunca decide precio ni compatibilidad: el servidor valida en cada cambio y revalida al crear el pedido.
+- El historial del chat lo guarda el cliente, pero cada respuesta del asesor va firmada con HMAC (`signature`), y la API rechaza turnos `assistant` sin firma válida. Sin `ADVISOR_SECRET`, la clave cambia al reiniciar la API.
 - **Base de datos SQLite** (`node:sqlite`, requiere Node ≥ 22.13) en `data/kamay.db` (ignorado por git), con el esquema en [backend/schema.sql](backend/schema.sql): 13 tablas, ya incluidas las de usuarios, sesiones y comprobante. Al arrancar se aplica el esquema y, si la base está vacía, se cargan los datos iniciales de `catalog.mts`, `profiles.mts` y `builds.mts`.
   - Patrón repositorio: `CatalogRepository` mantiene el catálogo en memoria (hay que llamar a `reload()` después de modificarlo) y `useCatalog()`/`catalog()` lo exponen al motor. `OrderRepository` guarda cada pedido en una transacción. Los tests usan `:memory:`.
   - Los componentes se desactivan (`activo = 0`), nunca se borran; un equipo base con una pieza inactiva se oculta. Los pedidos copian nombre y precio al comprar.

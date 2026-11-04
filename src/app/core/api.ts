@@ -92,6 +92,8 @@ export interface Order {
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
+  /** Firma que el servidor pone a cada respuesta del asesor; sin ella no acepta el historial. */
+  signature?: string;
 }
 
 export interface Proposal extends ConfigurationInput {
@@ -133,7 +135,7 @@ export class Api {
   }
 
   advise(messages: ChatMessage[], context: ConfigurationInput | null, proposal: ConfigurationInput | null) {
-    return this.http.post<{ reply: string; proposal: Proposal | null }>('/api/advice', { messages, context, proposal });
+    return this.http.post<{ reply: string; proposal: Proposal | null; signature: string }>('/api/advice', { messages, context, proposal });
   }
 
   orders() {

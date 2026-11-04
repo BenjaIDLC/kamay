@@ -26,7 +26,7 @@ test('live advisor asks for missing data, proposes a validated build and rejects
       assert.equal(result.proposal.status, check.status);
       proposal = { componentIds: result.proposal.componentIds, profileId: result.proposal.profileId, budget: result.proposal.budget };
     }
-    messages.push({ role: 'assistant', content: result.reply });
+    messages.push({ role: 'assistant', content: result.reply, signature: result.signature });
     console.log(JSON.stringify({ user: content, reply: result.reply, proposal: result.proposal }));
     return result;
   }
