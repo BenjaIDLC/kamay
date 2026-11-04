@@ -42,6 +42,13 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - Mediciones del RNF-01 (build de producción con gzip): validación en la API con p95 de 6 ms; cambio de pieza hasta ver el resultado, ~70 ms; páginas en ~0,3 s sin limitar la red y ~2,3 s con 4G lento + CPU 4x.
 - TSDoc en `backend/` y `src/app/core/`; `npm run docs` genera la documentación con TypeDoc en `dist/docs`.
 
+## Informe de pruebas (semana 13)
+
+- [docs/informe/informe-pruebas.docx](docs/informe/informe-pruebas.docx): 12 casos con la plantilla del curso (2 por funcionalidad: flujo principal y negativo) sobre catálogo, configurador, checkout, seguimiento, asesor IA y rendimiento, con capturas. Sigue la estructura del informe de ejemplo: resumen, defectos, 4 métricas y conclusiones.
+- Resultado: 10 Pass y 2 Bloqueados (CP-09 y CP-10, asesor). La clave de OpenAI del entorno en la nube daba 401. **Pendiente:** ejecutarlos en local con una clave válida y actualizar el informe.
+- DEF-01 (abierto, severidad media): con el perfil "Slow 4G" de Chrome (562 ms) las páginas tardan entre 3,3 y 4,3 s por la cadena de peticiones (HTML → JS → chunk de la ruta → API). Con el perfil de 150 ms tardan entre 1,6 y 1,9 s y cumplen el RNF-01.
+- Los casos se ejecutaron con Playwright; los scripts quedaron fuera del repo. El CP-02 desactiva un componente por SQL porque todavía no hay panel de administración.
+
 ## Decisiones tomadas (no revertir sin consultar)
 
 - **Motor simple de 8 reglas** en [backend/compatibility.mts](backend/compatibility.mts): socket, memoria, formato, espacio GPU, cooler, video, potencia y uso. Estados de regla: `ok`, `advertencia`, `bloqueo`, `pendiente`, `no_aplica`. Estado global: `incompleta`, `no_valida` o `valida`. La GPU es opcional.
