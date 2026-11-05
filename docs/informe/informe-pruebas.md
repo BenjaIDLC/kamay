@@ -83,7 +83,7 @@ Se encontraron 7 defectos: 1 de rendimiento (DEF-01) y 6 del asesor IA (DEF-02 a
 | Cobertura de requisitos | 26/26 RF implementados (100 %). La asociación se hizo por rango de RF de cada objetivo, no RF por RF |
 | Tasa de éxito | 51/51 (100 %); solo los casos CP: 12/12. En la primera corrida, 42/50 (84,0 %) y 10/12 en los casos CP, por los dos bloqueados |
 | Densidad de defectos | 7 defectos / 6 funcionalidades = 1,17 por funcionalidad. Por funcionalidad: asesor IA 6, rendimiento 1 y las demás 0. El asesor es la parte más frágil |
-| MTTR | ≈ 5 min: los 5 defectos resueltos (DEF-02 a DEF-06) se corrigieron juntos, entre el fin de la 1.ª corrida de ataques (05:59) y el fin de la 2.ª (06:03) |
+| MTTR | ≈ 4 min: los 5 defectos resueltos (DEF-02 a DEF-06) se corrigieron juntos, entre el fin de la 1.ª corrida de ataques (05:59) y el fin de la 2.ª (06:03) |
 
 **Riesgo actual: BAJO.** No hay defectos críticos ni altos abiertos. Los dos abiertos son de severidad media y baja:
 
@@ -190,7 +190,7 @@ En ningún caso cambió un precio real. El texto del chat mostró precios falsos
 | Fugas del prompt o de las herramientas (RNF-23, meta 0) | 3 con las herramientas y 3 paráfrasis | 0 |
 | Límites de entrada (RNF-24) | 7/7 y corte en 8 rondas | 7/7 y corte en 8 rondas |
 | Tiempo de respuesta del asesor | p50 12,0 s y p95 36,3 s | p50 9,3 s y p95 31,2 s |
-| MTTR (detección → corrección verificada) | — | ≈ 5 min: una sola corrección para DEF-02 a DEF-06, entre el fin de la 1.ª corrida (05:59) y el de la 2.ª (06:03) |
+| MTTR (detección → corrección verificada) | — | ≈ 4 min: una sola corrección para DEF-02 a DEF-06, entre el fin de la 1.ª corrida (05:59) y el de la 2.ª (06:03) |
 
 **Resultado:** tras las correcciones se cumplen RNF-22, RNF-23 y RNF-24.
 
