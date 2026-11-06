@@ -47,6 +47,7 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
   - **Redactado por Claude:** hitos del acta (Tabla 8.5), 9.2.3 costos (S/ 15 380, S/ 716 de desembolso; desglose propuesto), 9.2.4 calidad, 9.2.5 roles y RACI (confirmados por el usuario: Benjamin jefe de proyecto y backend, Airton backend, Diego frontend), 9.2.6 comunicaciones, 9.2.8 adquisiciones, riesgos R16 (inyección de prompts) y R17 (API sin autenticación), y 9.3 con 4 capturas (Figuras 9.3 a 9.6) y un BPMN (Figura 9.7).
   - Tablas renumeradas: capítulo 8 hasta la 8.7 y capítulo 9 hasta la 9.13.
   - Se descartó el documento del compañero («Documentacion-Integrador.docx»), con 10 RF y 5 RNF y funciones que no existen; se mantienen nuestros 33 RF y 21 RNF.
+  - Se agregó el capítulo 11, Pruebas de software (11.1, con las Tablas 11.1 y 11.2), que resume el informe de pruebas. El usuario pidió solo el 11: de la plantilla final (12 despliegue, 13 monitoreo, 14 a 17, anexos 19.x) no se agrega nada por ahora.
   - Faltan las referencias de los capítulos 3 y 7 (el usuario las tiene; agregar también OpenAI 2026 y OWASP 2025), 9.5 (registro de cambios), los anexos (matriz de trazabilidad) y volver a exportar a Word.
 
 ## Informe de pruebas (semana 13)
