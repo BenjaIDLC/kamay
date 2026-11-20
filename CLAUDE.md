@@ -77,6 +77,12 @@ La docente quiere énfasis en la inyección de prompts (*prompt injection*). Pla
 - **Ya revisado:** `context` y `proposal` se validan contra el catálogo con `parseConfiguration`, así que no permiten inyectar texto en el prompt.
 - **Si un ataque funciona:** registrarlo como defecto, corregirlo y volver a probarlo, para poder calcular el MTTR. El resultado va en una sección nueva del informe, "Pruebas de seguridad del asesor", con su resumen en `.md`.
 
+## Despliegue (planificado, no ejecutado)
+
+- Plan en [docs/despliegue.md](docs/despliegue.md). Reemplaza un borrador de un compañero que proponía Supabase/PostgreSQL, variables que el código no lee (`DATABASE_URL`, `CORS_ORIGIN`, `API_BASE_URL`), un entorno de staging y Docker.
+- Decidido: Vercel (SPA, con `vercel.json` que reenvía `/api/*` a Render, así que no hace falta CORS) + Render Free (API con SQLite; los pedidos se pierden al redeployar) + GitHub Actions (`api:test` + `build`), con Render en "After CI Checks Pass".
+- Cambios de código pendientes antes de desplegar: escuchar en `0.0.0.0` (hoy `127.0.0.1`), `engines` en `package.json`, `vercel.json`, `ci.yml` y un rate limit en `/api/advice`.
+
 ## Decisiones tomadas (no revertir sin consultar)
 
 - **Motor simple de 8 reglas** en [backend/compatibility.mts](backend/compatibility.mts): socket, memoria, formato, espacio GPU, cooler, video, potencia y uso. Estados de regla: `ok`, `advertencia`, `bloqueo`, `pendiente`, `no_aplica`. Estado global: `incompleta`, `no_valida` o `valida`. La GPU es opcional.
