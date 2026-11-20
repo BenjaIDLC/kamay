@@ -9,7 +9,7 @@ import { categories, categoryNames } from './catalog.mjs';
 import { catalog, CatalogRepository, useCatalog } from './catalog-repository.mjs';
 import { openDatabase } from './db.mjs';
 import { InputError, parseConfiguration, validateConfiguration } from './compatibility.mjs';
-import { advise, AdvisorError, type Message } from './advisor.mjs';
+import { advise, AdvisorError, verifyHistory, type Message } from './advisor.mjs';
 import { listBuilds } from './builds.mjs';
 import { NotFoundError, OrderRepository } from './orders.mjs';
 
@@ -49,6 +49,10 @@ export function createApp(db: DatabaseSync = openDatabase(process.env['DB_FILE']
           (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string' &&
           item.content.trim().length > 0 && item.content.length <= 4000) || messages.at(-1).role !== 'user') {
       res.status(400).json({ error: 'Envía entre 1 y 30 mensajes; el último debe ser del usuario.' });
+      return;
+    }
+    if (!verifyHistory(messages as Message[])) {
+      res.status(400).json({ error: 'No pudimos verificar la conversación. Empieza una nueva.' });
       return;
     }
     const configuration = req.body.context ? parseConfiguration(req.body.context) : null;
