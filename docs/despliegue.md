@@ -73,6 +73,7 @@ Estas son **todas** las variables que usa el código (`backend/server.mts` y `ba
 | Variable | Obligatoria | Local | Render | Uso |
 | --- | --- | --- | --- | --- |
 | `OPENAI_API_KEY` | Para el chat | `sk-...` en `.env` | `sk-...` (secreto) | Autenticación con OpenAI. Sin ella, todo funciona salvo el asesor, que muestra un error recuperable |
+| `ADVISOR_SECRET` | En la nube, sí | Sin definir (se genera una al arrancar) | Cadena aleatoria larga (secreto) | Firma las respuestas del asesor para detectar historiales falsificados. Si no se fija, cada reinicio genera otra clave y las conversaciones abiertas dejan de validarse; en el plan Free la API se reinicia con frecuencia |
 | `OPENAI_MODEL` | No | `gpt-5-mini` | `gpt-5-mini` | Modelo del asesor |
 | `PORT` | No | `3000` | La define Render | Puerto en el que escucha la API |
 | `DB_FILE` | No | `data/kamay.db` | `data/kamay.db` o `/var/data/kamay.db` (ver 3.3) | Ruta del archivo SQLite |
@@ -111,7 +112,7 @@ Hay otro riesgo **conocido y aceptado**. Sin cuentas de usuario (fase B), `GET /
    - **Start Command:** `node dist/api/server.mjs`
    - **Health Check Path:** `/api/catalog`
    - **Instance Type:** Free
-3. En *Environment*, cargar `OPENAI_API_KEY`, `OPENAI_MODEL=gpt-5-mini` y `NODE_VERSION=24`.
+3. En *Environment*, cargar `OPENAI_API_KEY`, `ADVISOR_SECRET` (generada con `openssl rand -hex 32`), `OPENAI_MODEL=gpt-5-mini` y `NODE_VERSION=24`.
 4. En *Settings → Auto-Deploy*, elegir **After CI Checks Pass**: Render solo despliega si la CI de GitHub pasó.
 5. Desplegar y anotar la URL (`https://<servicio>.onrender.com`).
 
@@ -163,7 +164,7 @@ Fases de la CI:
 | Fase | Comando | Qué comprueba |
 | --- | --- | --- |
 | Instalación | `npm ci` | Que `package-lock.json` sea instalable |
-| Tipos y tests de la API | `npm run api:test` | Compila el backend con `tsc` (chequeo de tipos estricto) y ejecuta los 18 tests: motor, base de datos, API, pedidos y asesor con un proveedor simulado, sin gastar créditos |
+| Tipos y tests de la API | `npm run api:test` | Compila el backend con `tsc` (chequeo de tipos estricto) y ejecuta los 19 tests: motor, base de datos, API, pedidos y asesor con un proveedor simulado, sin gastar créditos |
 | Build del frontend | `npm run build` | Compila Angular en modo producción, con chequeo de plantillas y límites de tamaño del bundle |
 
 El proyecto no tiene linter configurado. El chequeo de tipos lo hacen `tsc` y el compilador de Angular. `npm run api:test:live` no va en la CI porque consume créditos de OpenAI.
