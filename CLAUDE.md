@@ -71,11 +71,11 @@ Proyecto integrador universitario: tienda de computadoras armadas a medida (Per�
 - Abierto, DEF-07 (severidad baja): a veces aparecen identificadores internos (`render_cpu`, `recommended`).
 - El harness (`attacks.mjs`) quedó fuera del repo; la lista de ataques está en el informe. Para repetirlo: un script que mande cada ataque 3 veces a `/api/advice`, reenviando la `signature` de cada respuesta.
 
-## Despliegue (planificado, no ejecutado)
+## Despliegue
 
 - Plan en [docs/despliegue.md](docs/despliegue.md). Reemplaza un borrador de un compañero que proponía Supabase/PostgreSQL, variables que el código no lee (`DATABASE_URL`, `CORS_ORIGIN`, `API_BASE_URL`), un entorno de staging y Docker.
 - Decidido: Vercel (SPA, con `vercel.json` que reenvía `/api/*` a Render, así que no hace falta CORS) + Render Free (API con SQLite; los pedidos se pierden al redeployar) + GitHub Actions (`api:test` + `build`), con Render en "After CI Checks Pass".
-- Cambios de código pendientes antes de desplegar: escuchar en `0.0.0.0` (hoy `127.0.0.1`), `engines` en `package.json`, `vercel.json`, `ci.yml` y un rate limit en `/api/advice`.
+- Hechos los 5 cambios: la API escucha en `0.0.0.0`, `engines` en `package.json`, `vercel.json` (apunta a `https://kamay-api.onrender.com`; cambiarlo si el nombre del servicio es otro), `.github/workflows/ci.yml` y un rate limit en memoria en `/api/advice` (20 cada 10 min por IP, responde 429).
 
 ## Decisiones tomadas (no revertir sin consultar)
 

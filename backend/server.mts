@@ -22,7 +22,9 @@ export function createApp(db: DatabaseSync = openDatabase(process.env['DB_FILE']
   const orders = new OrderRepository(db);
   const app = express();
   app.disable('x-powered-by');
+  app.set('trust proxy', true);
   app.use(express.json({ limit: '32kb' }));
+  const adviceLimit = rateLimit(20, 10 * 60_000);
 
   app.get('/api/catalog', (_req, res) => {
     res.json({ currency: 'PEN', categories: categories.map(id => ({ id, name: categoryNames[id] })),
@@ -42,7 +44,7 @@ export function createApp(db: DatabaseSync = openDatabase(process.env['DB_FILE']
   app.post('/api/orders', (req, res) => { res.status(201).json(orders.create(req.body)); });
   app.post('/api/orders/:id/advance', (req, res) => { res.json(orders.advance(req.params.id)); });
 
-  app.post('/api/advice', async (req, res) => {
+  app.post('/api/advice', adviceLimit, async (req, res) => {
     const messages: unknown = req.body?.messages;
     if (!Array.isArray(messages) || messages.length < 1 || messages.length > 30 ||
         !messages.every(item => item && typeof item === 'object' &&
@@ -76,7 +78,33 @@ export function createApp(db: DatabaseSync = openDatabase(process.env['DB_FILE']
   return app;
 }
 
+/**
+ * Limita las peticiones por IP en una ventana de tiempo (en memoria). Protege el gasto en OpenAI de una URL pública.
+ * @param max - Peticiones permitidas por ventana.
+ * @param windowMs - Duración de la ventana en milisegundos.
+ */
+function rateLimit(max: number, windowMs: number): express.RequestHandler {
+  const hits = new Map<string, { count: number; reset: number }>();
+  return (req, res, next) => {
+    const now = Date.now();
+    const key = req.ip ?? 'desconocida';
+    const entry = hits.get(key);
+    if (!entry || entry.reset <= now) {
+      if (hits.size > 10_000) hits.clear();
+      hits.set(key, { count: 1, reset: now + windowMs });
+      next();
+      return;
+    }
+    if (++entry.count > max) {
+      res.set('Retry-After', String(Math.ceil((entry.reset - now) / 1000)));
+      res.status(429).json({ error: 'Enviaste demasiados mensajes. Espera unos minutos e inténtalo de nuevo.' });
+      return;
+    }
+    next();
+  };
+}
+
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const port = Number(process.env['PORT'] ?? 3000);
-  createApp().listen(port, '127.0.0.1', () => console.log(`Kamay API: http://127.0.0.1:${port}`));
+  createApp().listen(port, '0.0.0.0', () => console.log(`Kamay API: http://localhost:${port}`));
 }

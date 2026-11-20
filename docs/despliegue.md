@@ -1,6 +1,6 @@
 # Plan de despliegue
 
-Este documento describe cómo se publicará Kamay en internet. Es un **plan**: todavía no hay nada desplegado, y los cambios de código de la sección 4 aún no están hechos.
+Este documento describe cómo se publicará Kamay en internet. Los cambios de código de la sección 4 ya están hechos en `master`.
 
 Criterio general: desplegar el sistema **tal como está** (Angular + Express + SQLite) en servicios gratuitos y con los menores cambios posibles. No se migra la base de datos ni se agregan piezas que el MVP no usa.
 
@@ -89,7 +89,7 @@ Al arrancar, la API crea el esquema y, si la base está vacía, carga el catálo
 
 No se migra a PostgreSQL ni a Supabase. El acceso a datos usa la API síncrona de `node:sqlite`, así que migrar implicaría reescribir los repositorios y el esquema. Es un cambio grande que no aporta nada al alcance del MVP.
 
-## 4. Cambios necesarios antes de desplegar
+## 4. Cambios hechos para poder desplegar
 
 | # | Cambio | Archivo | Motivo |
 | --- | --- | --- | --- |
